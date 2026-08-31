@@ -54,9 +54,9 @@ export function Navbar() {
             <a href="#top" className="hover:text-gold transition-colors">{t.nav.home}</a>
             <a 
               href="#why" 
-              className="text-gold font-bold bg-gold/10 hover:bg-gold/20 border border-gold/30 hover:border-gold/50 px-3 py-1 rounded-full transition-all duration-300 shadow-[0_0_10px_rgba(212,175,55,0.1)] flex items-center gap-1 hover:scale-105"
+              className="bg-emerald-deep text-gold hover:text-gold/90 font-bold hover:bg-[#12422c] border border-gold/30 px-3.5 py-1.5 rounded-full transition-all duration-300 shadow-[0_2px_8px_rgba(0,0,0,0.15)] flex items-center gap-1.5 hover:scale-105 cursor-pointer shrink-0"
             >
-              <Star className="h-3 w-3 text-gold fill-gold animate-pulse" />
+              <Star className="h-3.5 w-3.5 text-gold fill-gold animate-pulse" />
               <span>{t.nav.about}</span>
             </a>
             <a href="#offer" className="hover:text-gold transition-colors">{t.nav.offer}</a>
@@ -112,10 +112,13 @@ export function Navbar() {
               <a 
                 onClick={() => setOpen(false)} 
                 href="#why" 
-                className="py-2.5 px-4 my-1 rounded-xl bg-gold/10 text-gold font-bold border border-gold/30 flex items-center justify-between transition-all"
+                className="py-3 px-4 my-1.5 rounded-xl bg-gradient-gold text-gold-foreground font-bold border border-gold/20 flex items-center justify-between shadow-gold transition-all duration-300 hover:scale-[1.02] cursor-pointer"
               >
-                <span>{t.nav.about}</span>
-                <Star className="h-4 w-4 text-gold fill-gold animate-pulse" />
+                <span className="flex items-center gap-2">
+                  <Star className="h-4 w-4 fill-gold-foreground text-gold-foreground animate-pulse" />
+                  <span>{t.nav.about}</span>
+                </span>
+                <span className="text-[10px] uppercase tracking-wider bg-gold-foreground/10 px-2.5 py-0.5 rounded-full">New</span>
               </a>
               <a onClick={() => setOpen(false)} href="#offer" className="py-2 hover:text-gold transition-colors">{t.nav.offer}</a>
               <a onClick={() => setOpen(false)} href="#courses" className="py-2 hover:text-gold transition-colors">{t.nav.courses}</a>
