@@ -3,7 +3,7 @@ export type Lang = "en" | "ur" | "hi";
 export const translations = {
   en: {
     dir: "ltr",
-    nav: { home: "Home", courses: "Courses", offer: "Offer", about: "Why Admission?", contact: "Contact", posters: "Gallery" },
+    nav: { home: "Home", courses: "Courses", offer: "Offer", about: "Why Us?", contact: "Contact", posters: "Gallery" },
     brand: "Madrasa E Gulaaman E Mustafa ﷺ",
     hero: {
       badge: "2026–27 BIG MEGA OFFER",
@@ -214,7 +214,7 @@ export const translations = {
   },
   ur: {
     dir: "rtl",
-    nav: { home: "ہوم", courses: "کورسز", offer: "آفر", about: "داخلہ کیوں لیں؟", contact: "رابطہ", posters: "گیلری" },
+    nav: { home: "ہوم", courses: "کورسز", offer: "آفر", about: "ہمیں کیوں چنیں؟", contact: "رابطہ", posters: "گیلری" },
     brand: "مدرسہ غلامانِ مصطفی ﷺ",
     hero: {
       badge: "2026–27 بڑی میگا آفر",
@@ -418,7 +418,7 @@ export const translations = {
   },
   hi: {
     dir: "ltr",
-    nav: { home: "होम", courses: "कोर्स", offer: "ऑफर", about: "एडमिशन क्यों लें?", contact: "संपर्क", posters: "गैलरी" },
+    nav: { home: "होम", courses: "कोर्स", offer: "ऑफर", about: "हमें क्यों चुनें?", contact: "संपर्क", posters: "गैलरी" },
     brand: "मदरसा ए गुलामान ए मुस्तफा ﷺ",
     hero: {
       badge: "2026–27 बिग मेगा ऑफर",

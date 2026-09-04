@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useLang, WHATSAPP_URL } from "@/i18n/LangContext";
 import type { Lang } from "@/i18n/translations";
 import { Menu, X, Globe, MessageCircle, Star } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 
 const langs: { code: Lang; label: string }[] = [
@@ -32,7 +33,7 @@ export function Navbar() {
         <div
           className="flex items-center justify-between rounded-2xl px-2 sm:px-4 md:px-6 py-2 sm:py-3 transition-all glass shadow-soft"
         >
-          <a href="#top" className="flex items-center gap-1.5 sm:gap-2.5 md:gap-4 group">
+          <a href="/" className="flex items-center gap-1.5 sm:gap-2.5 md:gap-4 group">
             <div className="relative h-10 w-10 sm:h-14 sm:w-14 md:h-16 md:w-16 rounded-xl sm:rounded-2xl grid place-items-center shrink-0 border border-gold/30 shadow-gold overflow-hidden bg-[#2a2a2a] transition-transform group-hover:scale-105">
               <img 
                 src="/logo.png" 
@@ -51,18 +52,18 @@ export function Navbar() {
           </a>
 
           <nav className="hidden lg:flex items-center gap-7 text-sm font-medium">
-            <a href="#top" className="hover:text-gold transition-colors">{t.nav.home}</a>
-            <a 
-              href="#why" 
+            <a href="/" className="hover:text-gold transition-colors">{t.nav.home}</a>
+            <Link 
+              to="/why-us" 
               className="bg-emerald-deep text-gold hover:text-gold/90 font-bold hover:bg-[#12422c] border border-gold/30 px-3.5 py-1.5 rounded-full transition-all duration-300 shadow-[0_2px_8px_rgba(0,0,0,0.15)] flex items-center gap-1.5 hover:scale-105 cursor-pointer shrink-0"
             >
               <Star className="h-3.5 w-3.5 text-gold fill-gold animate-pulse" />
               <span>{t.nav.about}</span>
-            </a>
-            <a href="#offer" className="hover:text-gold transition-colors">{t.nav.offer}</a>
-            <a href="#courses" className="hover:text-gold transition-colors">{t.nav.courses}</a>
-            <a href="#posters" className="hover:text-gold transition-colors">{t.nav.posters}</a>
-            <a href="#contact" className="hover:text-gold transition-colors">{t.nav.contact}</a>
+            </Link>
+            <a href="/#offer" className="hover:text-gold transition-colors">{t.nav.offer}</a>
+            <a href="/#courses" className="hover:text-gold transition-colors">{t.nav.courses}</a>
+            <a href="/#posters" className="hover:text-gold transition-colors">{t.nav.posters}</a>
+            <a href="/#contact" className="hover:text-gold transition-colors">{t.nav.contact}</a>
           </nav>
 
           <div className="flex items-center gap-1.5 sm:gap-2 md:gap-4 shrink-0">
@@ -108,10 +109,10 @@ export function Navbar() {
         {open && (
           <div className="lg:hidden mt-2 glass-dark rounded-2xl p-4 animate-fade-up border border-gold/20 shadow-xl">
             <nav className="flex flex-col gap-3 text-base font-medium text-white/90">
-              <a onClick={() => setOpen(false)} href="#top" className="py-2 hover:text-gold transition-colors">{t.nav.home}</a>
-              <a 
+              <a onClick={() => setOpen(false)} href="/" className="py-2 hover:text-gold transition-colors">{t.nav.home}</a>
+              <Link 
                 onClick={() => setOpen(false)} 
-                href="#why" 
+                to="/why-us" 
                 className="py-3 px-4 my-1.5 rounded-xl bg-gradient-gold text-gold-foreground font-bold border border-gold/20 flex items-center justify-between shadow-gold transition-all duration-300 hover:scale-[1.02] cursor-pointer"
               >
                 <span className="flex items-center gap-2">
@@ -119,11 +120,11 @@ export function Navbar() {
                   <span>{t.nav.about}</span>
                 </span>
                 <span className="text-[10px] uppercase tracking-wider bg-gold-foreground/10 px-2.5 py-0.5 rounded-full">New</span>
-              </a>
-              <a onClick={() => setOpen(false)} href="#offer" className="py-2 hover:text-gold transition-colors">{t.nav.offer}</a>
-              <a onClick={() => setOpen(false)} href="#courses" className="py-2 hover:text-gold transition-colors">{t.nav.courses}</a>
-              <a onClick={() => setOpen(false)} href="#posters" className="py-2 hover:text-gold transition-colors">{t.nav.posters}</a>
-              <a onClick={() => setOpen(false)} href="#contact" className="py-2 hover:text-gold transition-colors">{t.nav.contact}</a>
+              </Link>
+              <a onClick={() => setOpen(false)} href="/#offer" className="py-2 hover:text-gold transition-colors">{t.nav.offer}</a>
+              <a onClick={() => setOpen(false)} href="/#courses" className="py-2 hover:text-gold transition-colors">{t.nav.courses}</a>
+              <a onClick={() => setOpen(false)} href="/#posters" className="py-2 hover:text-gold transition-colors">{t.nav.posters}</a>
+              <a onClick={() => setOpen(false)} href="/#contact" className="py-2 hover:text-gold transition-colors">{t.nav.contact}</a>
             </nav>
             
             <a
