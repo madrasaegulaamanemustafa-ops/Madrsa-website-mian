@@ -29,12 +29,18 @@ function WhyUs() {
 }
 
 function WhyUsContent() {
-  const { t, isRtl } = useLang();
+  const { t } = useLang();
   
   // Use translations
   const whyData = t.why;
   
-  const displayedFeatureIds = [1, 3, 4, 5, 7];
+  // Custom images mapping
+  const featureImages: Record<number, string> = {
+    3: "/images/why-us/notes.jpg",
+    4: "/images/why-us/weekly-tests.jpg",
+    5: "/images/why-us/15-day-exams.jpg",
+    15: "/images/why-us/chat.png"
+  };
   
   return (
     <div className="container mx-auto px-4 max-w-6xl">
@@ -51,64 +57,26 @@ function WhyUsContent() {
           </p>
        </div>
        
-       <div className="space-y-24 mb-24">
-         {/* Point 1: Live Classes with Video Placeholder */}
-         <FeatureSection 
-           point={whyData.items[0]} // Live Classes
-           videoPlaceholder
-           isReversed={false}
-         />
-
-         {/* Point 3: Digital Notes with Image */}
-         <FeatureSection 
-           point={whyData.items[2]} // Digital Notes
-           image="/images/why-us/notes.jpg"
-           imageAlt="Digital Notes"
-           isReversed={true}
-         />
-         
-         {/* Point 4: Weekly Tests with Image */}
-         <FeatureSection 
-           point={whyData.items[3]} // Weekly tests
-           image="/images/why-us/weekly-tests.jpg"
-           imageAlt="Weekly Tests"
-           isReversed={false}
-         />
-         
-         {/* Point 5: 15-Day Exams with Image */}
-         <FeatureSection 
-           point={whyData.items[4]} // 15 Day Exams
-           image="/images/why-us/15-day-exams.jpg"
-           imageAlt="15-Day Exams"
-           isReversed={true}
-         />
-         
-         {/* Point 7: Zayrik Live Classroom with Video Placeholder */}
-         <FeatureSection 
-           point={whyData.items[6]} // Zayrik Live Classroom
-           videoPlaceholder
-           isReversed={false}
-         />
+       <div className="space-y-20 md:space-y-32 mb-24">
+         {whyData.items.map((item, index) => {
+           const hasImage = !!featureImages[item.id];
+           
+           return (
+             <FeatureSection 
+               key={item.id}
+               point={item}
+               image={hasImage ? featureImages[item.id] : undefined}
+               imageAlt={item.title}
+               videoPlaceholder={!hasImage}
+               isReversed={index % 2 !== 0}
+             />
+           );
+         })}
        </div>
 
-       {/* Grid for the rest of the points */}
-       <div className="text-center mb-12">
-          <h2 className="text-3xl font-display font-bold text-emerald-deep">{whyData.slogan}</h2>
-       </div>
-       
-       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-6">
-          {whyData.items.map((item) => {
-             if (displayedFeatureIds.includes(item.id)) return null; 
-             return (
-               <div key={item.id} className="glass p-6 md:p-8 rounded-3xl border border-emerald-deep/10 shadow-soft hover:shadow-xl hover:scale-[1.02] transition-all duration-300 group">
-                 <div className="h-12 w-12 rounded-2xl bg-emerald-deep/5 flex items-center justify-center text-emerald-deep mb-5 group-hover:bg-emerald-deep group-hover:text-gold transition-colors">
-                   <CheckCircle2 className="w-6 h-6" />
-                 </div>
-                 <h3 className="text-xl font-bold text-emerald-deep mb-3 group-hover:text-emerald-800 transition-colors">{item.title}</h3>
-                 <p className="text-foreground/75 leading-relaxed">{item.desc}</p>
-               </div>
-             );
-          })}
+       {/* Slogan */}
+       <div className="text-center mb-12 animate-fade-up">
+          <h2 className="text-3xl md:text-5xl font-display font-bold text-emerald-deep">{whyData.slogan}</h2>
        </div>
     </div>
   );
