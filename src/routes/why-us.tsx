@@ -202,7 +202,7 @@ function WhyUsContent() {
              </button>
 
              {/* Center Media */}
-             <div className="max-h-[72vh] sm:max-h-[76vh] w-full flex items-center justify-center">
+             <div className="max-h-[72vh] sm:max-h-[76vh] w-full flex items-center justify-center relative">
                {currentMedia?.type === "image" ? (
                  <img
                    src={currentMedia.src}
@@ -210,15 +210,19 @@ function WhyUsContent() {
                    className="max-h-[72vh] sm:max-h-[76vh] max-w-full object-contain rounded-2xl shadow-2xl border border-gold/30 ring-1 ring-white/10"
                  />
                ) : currentMedia?.type === "video" ? (
-                 <video
-                   ref={modalVideoRef}
-                   key={currentMedia.src}
-                   src={currentMedia.src}
-                   controls
-                   playsInline
-                   preload="auto"
-                   className="max-h-[72vh] sm:max-h-[76vh] max-w-full rounded-2xl shadow-2xl border border-gold/30 bg-black"
-                 />
+                 <div className="relative max-h-[72vh] sm:max-h-[76vh] max-w-full flex items-center justify-center">
+                   <video
+                     ref={modalVideoRef}
+                     key={currentMedia.src}
+                     controls
+                     playsInline
+                     preload="auto"
+                     className="max-h-[72vh] sm:max-h-[76vh] max-w-full rounded-2xl shadow-2xl border border-gold/30 bg-black"
+                   >
+                     <source src={currentMedia.src} type="video/mp4" />
+                     Your browser does not support HTML5 video playback.
+                   </video>
+                 </div>
                ) : null}
              </div>
 
@@ -288,7 +292,7 @@ function FeatureSection({
                  <video 
                    src={media.src}
                    playsInline
-                   preload="metadata"
+                   preload="none"
                    muted
                    className="w-full h-full object-cover rounded-[2rem]"
                  />
