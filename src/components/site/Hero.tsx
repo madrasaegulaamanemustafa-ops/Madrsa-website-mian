@@ -25,7 +25,7 @@ export function Hero() {
           </div>
 
           <h2 className="font-arabic text-3xl md:text-5xl text-gold mb-6 animate-fade-up drop-shadow-sm" dir="rtl" style={{ animationDelay: "0.1s" }}>
-            السلام عليكم ورحمة الله
+            اَلسَلامُ عَلَيْكُم وَرَحْمَةُ اَللهِ وَبَرَكاتُه
           </h2>
 
           <h1
