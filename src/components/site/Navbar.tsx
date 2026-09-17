@@ -25,60 +25,65 @@ export function Navbar() {
   return (
     <header
       className={cn(
-        "fixed top-0 inset-x-0 z-50 transition-all duration-500",
-        scrolled ? "py-2" : "py-4"
+        "fixed top-0 inset-x-0 z-50 transition-all duration-700 ease-out",
+        scrolled ? "py-3" : "py-6"
       )}
     >
-      <div className="container mx-auto px-2 sm:px-4">
+      <div className="container mx-auto px-4 max-w-6xl">
         <div
-          className="flex items-center justify-between rounded-2xl px-2 sm:px-4 md:px-6 py-2 sm:py-3 transition-all glass shadow-soft"
+          className={cn(
+            "flex items-center justify-between transition-all duration-700 relative z-50",
+            "px-4 md:px-8 py-3",
+            "rounded-full glass border border-white/40 shadow-soft",
+            scrolled ? "bg-white/70 backdrop-blur-2xl" : "bg-white/40 backdrop-blur-md"
+          )}
         >
-          <a href="/" className="flex items-center gap-1.5 sm:gap-2.5 md:gap-4 group">
-            <div className="relative h-10 w-10 sm:h-14 sm:w-14 md:h-16 md:w-16 rounded-xl sm:rounded-2xl grid place-items-center shrink-0 border border-gold/30 shadow-gold overflow-hidden bg-[#2a2a2a] transition-transform group-hover:scale-105">
+          <a href="/" className="flex items-center gap-3 group">
+            <div className="relative h-12 w-12 rounded-full grid place-items-center shrink-0 border border-gold/30 shadow-sm overflow-hidden bg-white transition-all duration-500 group-hover:scale-105 group-hover:shadow-gold group-hover:border-gold">
               <img 
                 src="/logo.png" 
                 alt="Madarsa Logo" 
-                className="w-[120%] h-[120%] max-w-none object-cover" 
+                className="w-full h-full object-cover scale-110" 
               />
             </div>
-            <div>
-              <div className="font-display text-[11px] xs:text-[13px] sm:text-base md:text-lg font-bold leading-[1.1] text-foreground max-w-[100px] xs:max-w-[130px] sm:max-w-none">
+            <div className="hidden xs:block">
+              <div className="font-display text-sm md:text-base font-extrabold leading-tight text-emerald-deep tracking-tight">
                 {t.brand}
               </div>
-              <div className="text-[7px] xs:text-[8px] sm:text-[10px] uppercase tracking-[0.1em] sm:tracking-[0.2em] text-gold-foreground/70 mt-0.5">
+              <div className="text-[9px] uppercase tracking-[0.2em] text-emerald-deep/60 mt-0.5 font-bold">
                 Online Islamic Institute
               </div>
             </div>
           </a>
 
-          <nav className="hidden lg:flex items-center gap-7 text-sm font-medium">
-            <a href="/" className="hover:text-gold transition-colors">{t.nav.home}</a>
+          <nav className="hidden lg:flex items-center gap-1.5 p-1.5 rounded-full bg-black/5">
+            <a href="/" className="px-4 py-2 rounded-full text-sm font-semibold text-emerald-deep hover:bg-white hover:shadow-sm transition-all duration-300">{t.nav.home}</a>
             <Link 
               to="/why-us" 
-              className="bg-emerald-deep text-gold hover:text-gold/90 font-bold hover:bg-[#12422c] border border-gold/30 px-3.5 py-1.5 rounded-full transition-all duration-300 shadow-[0_2px_8px_rgba(0,0,0,0.15)] flex items-center gap-1.5 hover:scale-105 cursor-pointer shrink-0"
+              className="px-4 py-2 rounded-full text-sm font-bold bg-emerald-deep text-white shadow-md flex items-center gap-2 hover:bg-emerald-900 hover:scale-105 transition-all duration-300"
             >
-              <Star className="h-3.5 w-3.5 text-gold fill-gold animate-pulse" />
+              <Star className="h-3.5 w-3.5 fill-gold text-gold animate-pulse" />
               <span>{t.nav.about}</span>
             </Link>
-            <a href="/#offer" className="hover:text-gold transition-colors">{t.nav.offer}</a>
-            <a href="/#courses" className="hover:text-gold transition-colors">{t.nav.courses}</a>
-            <a href="/#posters" className="hover:text-gold transition-colors">{t.nav.posters}</a>
-            <a href="/#contact" className="hover:text-gold transition-colors">{t.nav.contact}</a>
+            <a href="/#offer" className="px-4 py-2 rounded-full text-sm font-semibold text-emerald-deep hover:bg-white hover:shadow-sm transition-all duration-300">{t.nav.offer}</a>
+            <a href="/#courses" className="px-4 py-2 rounded-full text-sm font-semibold text-emerald-deep hover:bg-white hover:shadow-sm transition-all duration-300">{t.nav.courses}</a>
+            <a href="/#posters" className="px-4 py-2 rounded-full text-sm font-semibold text-emerald-deep hover:bg-white hover:shadow-sm transition-all duration-300">{t.nav.posters}</a>
+            <a href="/#contact" className="px-4 py-2 rounded-full text-sm font-semibold text-emerald-deep hover:bg-white hover:shadow-sm transition-all duration-300">{t.nav.contact}</a>
           </nav>
 
-          <div className="flex items-center gap-1.5 sm:gap-2 md:gap-4 shrink-0">
-            {/* Always visible Language Selector, made compact for mobile */}
-            <div className="flex items-center gap-0.5 sm:gap-1 rounded-full glass px-0.5 sm:px-1 py-0.5 sm:py-1">
-              <Globe className="hidden sm:block h-3.5 w-3.5 ml-2 text-emerald-deep" />
+          <div className="flex items-center gap-3 shrink-0">
+            {/* Language Selector Pill */}
+            <div className="flex items-center gap-1 rounded-full bg-black/5 p-1">
+              <Globe className="hidden sm:block h-4 w-4 ml-2 text-emerald-deep/70" />
               {langs.map((l) => (
                 <button
                   key={l.code}
                   onClick={() => setLang(l.code)}
                   className={cn(
-                    "px-1.5 sm:px-2.5 py-1 text-[10px] sm:text-xs font-semibold rounded-full transition-all",
+                    "px-3 py-1.5 text-xs font-bold rounded-full transition-all duration-300",
                     lang === l.code
-                      ? "bg-gradient-emerald text-gold shadow-soft"
-                      : "text-foreground/70 hover:text-emerald-deep"
+                      ? "bg-white text-emerald-deep shadow-sm"
+                      : "text-emerald-deep/60 hover:text-emerald-deep hover:bg-white/50"
                   )}
                 >
                   {l.label}
@@ -90,15 +95,16 @@ export function Navbar() {
               href={WHATSAPP_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden sm:inline-flex items-center gap-2 rounded-full bg-gradient-gold px-4 py-2 text-sm font-bold text-gold-foreground shadow-gold hover:scale-105 transition-transform"
+              className="hidden sm:inline-flex items-center gap-2 rounded-full bg-gradient-emerald px-5 py-2.5 text-sm font-bold text-white shadow-luxe hover:scale-105 transition-all duration-300 relative group overflow-hidden"
             >
-              <MessageCircle className="h-4 w-4" />
-              <span>{t.hero.cta1}</span>
+              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+              <MessageCircle className="h-4 w-4 relative z-10" />
+              <span className="relative z-10">{t.hero.cta1}</span>
             </a>
 
             <button
               onClick={() => setOpen(!open)}
-              className="lg:hidden p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-emerald-deep/5 border border-emerald-deep/10 text-emerald-deep hover:bg-emerald-deep/10 transition-colors"
+              className="lg:hidden p-2.5 rounded-full bg-black/5 text-emerald-deep hover:bg-white hover:shadow-sm transition-all duration-300"
               aria-label="menu"
             >
               {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -106,38 +112,42 @@ export function Navbar() {
           </div>
         </div>
 
-        {open && (
-          <div className="lg:hidden mt-2 glass-dark rounded-2xl p-4 animate-fade-up border border-gold/20 shadow-xl">
-            <nav className="flex flex-col gap-3 text-base font-medium text-white/90">
-              <a onClick={() => setOpen(false)} href="/" className="py-2 hover:text-gold transition-colors">{t.nav.home}</a>
-              <Link 
-                onClick={() => setOpen(false)} 
-                to="/why-us" 
-                className="py-3 px-4 my-1.5 rounded-xl bg-gradient-gold text-gold-foreground font-bold border border-gold/20 flex items-center justify-between shadow-gold transition-all duration-300 hover:scale-[1.02] cursor-pointer"
-              >
-                <span className="flex items-center gap-2">
-                  <Star className="h-4 w-4 fill-gold-foreground text-gold-foreground animate-pulse" />
-                  <span>{t.nav.about}</span>
-                </span>
-                <span className="text-[10px] uppercase tracking-wider bg-gold-foreground/10 px-2.5 py-0.5 rounded-full">New</span>
-              </Link>
-              <a onClick={() => setOpen(false)} href="/#offer" className="py-2 hover:text-gold transition-colors">{t.nav.offer}</a>
-              <a onClick={() => setOpen(false)} href="/#courses" className="py-2 hover:text-gold transition-colors">{t.nav.courses}</a>
-              <a onClick={() => setOpen(false)} href="/#posters" className="py-2 hover:text-gold transition-colors">{t.nav.posters}</a>
-              <a onClick={() => setOpen(false)} href="/#contact" className="py-2 hover:text-gold transition-colors">{t.nav.contact}</a>
-            </nav>
-            
-            <a
-              href={WHATSAPP_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-6 w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-gold px-4 py-3 text-sm font-bold text-gold-foreground shadow-gold"
+        {/* Mobile Menu */}
+        <div
+          className={cn(
+            "lg:hidden absolute left-4 right-4 transition-all duration-500 ease-out overflow-hidden z-40 rounded-3xl bg-white/90 backdrop-blur-2xl border border-white/50 shadow-2xl",
+            open ? "top-[110%] opacity-100 p-5 mt-2" : "top-[80%] opacity-0 max-h-0 pointer-events-none"
+          )}
+        >
+          <nav className="flex flex-col gap-2 text-base font-bold text-emerald-deep">
+            <a onClick={() => setOpen(false)} href="/" className="py-3 px-4 rounded-xl hover:bg-emerald-deep/5 transition-colors">{t.nav.home}</a>
+            <Link 
+              onClick={() => setOpen(false)} 
+              to="/why-us" 
+              className="py-3 px-4 rounded-xl bg-gradient-emerald text-white flex items-center justify-between shadow-md transition-all duration-300"
             >
-              <MessageCircle className="h-5 w-5" />
-              <span>{t.hero.cta1}</span>
-            </a>
-          </div>
-        )}
+              <span className="flex items-center gap-2">
+                <Star className="h-4 w-4 fill-gold text-gold animate-pulse" />
+                <span>{t.nav.about}</span>
+              </span>
+              <span className="text-[10px] uppercase tracking-wider bg-black/20 px-2.5 py-0.5 rounded-full">New</span>
+            </Link>
+            <a onClick={() => setOpen(false)} href="/#offer" className="py-3 px-4 rounded-xl hover:bg-emerald-deep/5 transition-colors">{t.nav.offer}</a>
+            <a onClick={() => setOpen(false)} href="/#courses" className="py-3 px-4 rounded-xl hover:bg-emerald-deep/5 transition-colors">{t.nav.courses}</a>
+            <a onClick={() => setOpen(false)} href="/#posters" className="py-3 px-4 rounded-xl hover:bg-emerald-deep/5 transition-colors">{t.nav.posters}</a>
+            <a onClick={() => setOpen(false)} href="/#contact" className="py-3 px-4 rounded-xl hover:bg-emerald-deep/5 transition-colors">{t.nav.contact}</a>
+          </nav>
+          
+          <a
+            href={WHATSAPP_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-6 w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-emerald px-4 py-4 text-sm font-bold text-white shadow-luxe"
+          >
+            <MessageCircle className="h-5 w-5" />
+            <span>{t.hero.cta1}</span>
+          </a>
+        </div>
       </div>
     </header>
   );

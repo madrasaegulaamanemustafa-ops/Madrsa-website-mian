@@ -210,7 +210,7 @@ export const translations = {
     urgency: ["Only Few Seats Left", "Admissions Closing Soon", "Limited Time ₹300 Offer", "Admission Open Worldwide"],
     footer: { rights: "All rights reserved.", tagline: "Authentic Islamic education, globally accessible." },
     floating: "Apply Now",
-    popup: { title: "Salaam! 🌙", body: "Reserve your seat in the ₹300 mega offer before admissions close.", cta: "Chat on WhatsApp", later: "Maybe later" },
+    popup: { title: "Assalamu Alaikum! 🌙", body: "Reserve your seat in the ₹300 mega offer before admissions close.", cta: "Chat on WhatsApp", later: "Maybe later" },
   },
   ur: {
     dir: "rtl",
