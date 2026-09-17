@@ -104,18 +104,6 @@ function WhyUsContent() {
   const currentItem = activeModalIndex !== null ? items[activeModalIndex] : null;
   const currentMedia = currentItem ? featureMediaMap[currentItem.id] : null;
 
-  // Auto-play modal video when opened or when slide changes
-  useEffect(() => {
-    if (activeModalIndex !== null && currentMedia?.type === "video" && modalVideoRef.current) {
-      const playPromise = modalVideoRef.current.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          // Autoplay policy prevented playback without interaction; controls are accessible
-        });
-      }
-    }
-  }, [activeModalIndex, currentMedia]);
-
   return (
     <div className="container mx-auto px-4 max-w-6xl">
        {/* Hero for Why Us */}
@@ -155,15 +143,15 @@ function WhyUsContent() {
 
        {/* Fullscreen Lightbox Modal */}
        {activeModalIndex !== null && currentItem && (
-         <div 
-           className="fixed inset-0 z-50 bg-black/90 backdrop-blur-xl flex flex-col items-center justify-between p-4 sm:p-6 animate-fade-in"
-           onClick={handleCloseModal}
-         >
-           {/* Top Bar */}
+         <div className="fixed inset-0 z-50 flex flex-col items-center justify-between p-4 sm:p-6 animate-fade-in">
+           {/* Backdrop Layer */}
            <div 
-             className="w-full max-w-6xl flex items-center justify-between z-10 text-white pb-2"
-             onClick={(e) => e.stopPropagation()}
-           >
+             className="absolute inset-0 bg-black/92 backdrop-blur-xl cursor-pointer"
+             onClick={handleCloseModal}
+           />
+
+           {/* Top Bar */}
+           <div className="relative w-full max-w-6xl flex items-center justify-between z-10 text-white pb-2">
              <div className="flex items-center gap-3">
                <span className="bg-gold/20 text-gold text-xs sm:text-sm font-bold px-3 py-1 rounded-full border border-gold/40">
                  #{currentItem.id}
@@ -179,7 +167,7 @@ function WhyUsContent() {
                </span>
                <button
                  onClick={handleCloseModal}
-                 className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer hover:scale-110"
+                 className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer hover:scale-110 shadow-md"
                  aria-label="Close modal"
                >
                  <X className="h-6 w-6" />
@@ -188,10 +176,7 @@ function WhyUsContent() {
            </div>
 
            {/* Main Media Center View */}
-           <div 
-             className="relative w-full max-w-5xl flex-1 flex items-center justify-center my-2 select-none"
-             onClick={(e) => e.stopPropagation()}
-           >
+           <div className="relative w-full max-w-5xl flex-1 flex items-center justify-center my-2 z-10">
              {/* Left Nav Button */}
              <button
                onClick={handlePrev}
@@ -210,14 +195,15 @@ function WhyUsContent() {
                    className="max-h-[72vh] sm:max-h-[76vh] max-w-full object-contain rounded-2xl shadow-2xl border border-gold/30 ring-1 ring-white/10"
                  />
                ) : currentMedia?.type === "video" ? (
-                 <div className="relative max-h-[72vh] sm:max-h-[76vh] max-w-full flex items-center justify-center">
+                 <div className="relative max-h-[72vh] sm:max-h-[76vh] w-full max-w-4xl flex items-center justify-center">
                    <video
                      ref={modalVideoRef}
                      key={currentMedia.src}
                      controls
+                     autoPlay
                      playsInline
                      preload="auto"
-                     className="max-h-[72vh] sm:max-h-[76vh] max-w-full rounded-2xl shadow-2xl border border-gold/30 bg-black"
+                     className="max-h-[72vh] sm:max-h-[76vh] w-full rounded-2xl shadow-2xl border border-gold/30 bg-black"
                    >
                      <source src={currentMedia.src} type="video/mp4" />
                      Your browser does not support HTML5 video playback.
@@ -237,10 +223,7 @@ function WhyUsContent() {
            </div>
 
            {/* Bottom Bar / Description */}
-           <div 
-             className="w-full max-w-3xl text-center bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl p-4 text-white/90 z-10"
-             onClick={(e) => e.stopPropagation()}
-           >
+           <div className="relative w-full max-w-3xl text-center bg-black/50 backdrop-blur-md border border-white/10 rounded-2xl p-4 text-white/90 z-10 shadow-xl">
              <p className="text-xs sm:text-sm font-medium leading-relaxed max-w-2xl mx-auto text-white/80">
                {currentItem.desc}
              </p>
