@@ -1,5 +1,5 @@
-import { useLang, WHATSAPP_URL } from "@/i18n/LangContext";
-import { Instagram, Youtube, Facebook, MessageCircle } from "lucide-react";
+import { useLang, WHATSAPP_URL, WHATSAPP_CHANNEL_URL, INSTAGRAM_URL, FACEBOOK_URL, YOUTUBE_URL } from "@/i18n/LangContext";
+import { Instagram, Youtube, Facebook, MessageCircle, Radio } from "lucide-react";
 
 export function Footer() {
   const { t } = useLang();
@@ -38,20 +38,23 @@ export function Footer() {
             <p className="text-sm text-background/70">{t.footer.tagline}</p>
           </div>
           <div>
-            <div className="text-xs uppercase tracking-[0.3em] text-gold mb-3">Connect</div>
-            <div className="flex gap-3">
+            <div className="text-xs uppercase tracking-[0.3em] text-gold mb-3">Connect With Us</div>
+            <div className="flex flex-wrap gap-3">
               {[
-                { i: Instagram, h: "https://instagram.com" },
-                { i: Youtube, h: "https://youtu.be/AkWQDvhTKy4" },
-                { i: Facebook, h: "https://facebook.com" },
-                { i: MessageCircle, h: WHATSAPP_URL },
-              ].map(({ i: Icon, h }, k) => (
+                { name: "Instagram", icon: Instagram, url: INSTAGRAM_URL },
+                { name: "YouTube", icon: Youtube, url: YOUTUBE_URL },
+                { name: "Facebook", icon: Facebook, url: FACEBOOK_URL },
+                { name: "WhatsApp Channel", icon: Radio, url: WHATSAPP_CHANNEL_URL },
+                { name: "WhatsApp Chat", icon: MessageCircle, url: WHATSAPP_URL },
+              ].map(({ name, icon: Icon, url }) => (
                 <a
-                  key={k}
-                  href={h}
+                  key={name}
+                  href={url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="h-10 w-10 rounded-full glass-dark grid place-items-center hover:bg-gold hover:text-gold-foreground transition"
+                  title={name}
+                  aria-label={name}
+                  className="h-10 w-10 rounded-full glass-dark grid place-items-center hover:bg-gold hover:text-gold-foreground transition-all duration-300 hover:scale-110 shadow-sm"
                 >
                   <Icon className="h-4 w-4" />
                 </a>

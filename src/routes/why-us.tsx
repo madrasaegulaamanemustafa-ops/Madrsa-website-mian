@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { LangProvider } from "@/i18n/LangContext";
 import { Navbar } from "@/components/site/Navbar";
@@ -51,44 +51,35 @@ const featureMediaMap: Record<number, { type: "image" | "video"; src: string }> 
 function WhyUsContent() {
   const { t } = useLang();
   const [activeModalIndex, setActiveModalIndex] = useState<number | null>(null);
+  const modalVideoRef = useRef<HTMLVideoElement | null>(null);
 
   const whyData = t.why;
   const items = whyData.items;
 
-  const pauseAllVideos = () => {
-    if (typeof document !== "undefined") {
-      document.querySelectorAll("video").forEach((video) => {
-        try {
-          video.pause();
-          video.currentTime = 0;
-        } catch (e) {
-          // ignore any playback errors
-        }
-      });
-    }
-  };
-
   const handleOpenModal = (index: number) => {
-    pauseAllVideos();
     setActiveModalIndex(index);
   };
 
   const handleCloseModal = () => {
-    pauseAllVideos();
+    if (modalVideoRef.current) {
+      modalVideoRef.current.pause();
+    }
     setActiveModalIndex(null);
   };
 
   const handlePrev = useCallback(() => {
-    if (activeModalIndex === null) return;
-    pauseAllVideos();
+    if (modalVideoRef.current) {
+      modalVideoRef.current.pause();
+    }
     setActiveModalIndex((prev) => (prev !== null && prev > 0 ? prev - 1 : items.length - 1));
-  }, [activeModalIndex, items.length]);
+  }, [items.length]);
 
   const handleNext = useCallback(() => {
-    if (activeModalIndex === null) return;
-    pauseAllVideos();
+    if (modalVideoRef.current) {
+      modalVideoRef.current.pause();
+    }
     setActiveModalIndex((prev) => (prev !== null && prev < items.length - 1 ? prev + 1 : 0));
-  }, [activeModalIndex, items.length]);
+  }, [items.length]);
 
   // Keyboard navigation for modal
   useEffect(() => {
@@ -107,12 +98,23 @@ function WhyUsContent() {
     return () => {
       window.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = "unset";
-      pauseAllVideos();
     };
   }, [activeModalIndex, handlePrev, handleNext]);
 
   const currentItem = activeModalIndex !== null ? items[activeModalIndex] : null;
   const currentMedia = currentItem ? featureMediaMap[currentItem.id] : null;
+
+  // Auto-play modal video when opened or when slide changes
+  useEffect(() => {
+    if (activeModalIndex !== null && currentMedia?.type === "video" && modalVideoRef.current) {
+      const playPromise = modalVideoRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // Autoplay policy prevented playback without interaction; controls are accessible
+        });
+      }
+    }
+  }, [activeModalIndex, currentMedia]);
 
   return (
     <div className="container mx-auto px-4 max-w-6xl">
@@ -209,11 +211,12 @@ function WhyUsContent() {
                  />
                ) : currentMedia?.type === "video" ? (
                  <video
+                   ref={modalVideoRef}
                    key={currentMedia.src}
                    src={currentMedia.src}
                    controls
-                   autoPlay
                    playsInline
+                   preload="auto"
                    className="max-h-[72vh] sm:max-h-[76vh] max-w-full rounded-2xl shadow-2xl border border-gold/30 bg-black"
                  />
                ) : null}

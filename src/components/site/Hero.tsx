@@ -1,6 +1,6 @@
 import { useLang, WHATSAPP_URL } from "@/i18n/LangContext";
 import heroImg from "@/assets/hero-mosque.jpg";
-import { Check, MessageCircle, GraduationCap, Sparkles, BookOpen, Star } from "lucide-react";
+import { Check, MessageCircle, GraduationCap, Sparkles, BookOpen, Star, ShieldCheck } from "lucide-react";
 
 export function Hero() {
   const { t } = useLang();
@@ -44,7 +44,7 @@ export function Hero() {
           </p>
 
           <div
-            className="flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-4 mb-10 animate-fade-up"
+            className="flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-4 mb-6 animate-fade-up"
             style={{ animationDelay: "0.4s" }}
           >
             {t.hero.trust.map((tr) => (
@@ -56,6 +56,22 @@ export function Hero() {
               </div>
             ))}
           </div>
+
+          {/* Teacher Separation & Safety Highlight */}
+          {t.hero.safetyNote && (
+            <div
+              className="bg-white/70 backdrop-blur-md border border-emerald-deep/15 rounded-2xl p-4 sm:p-5 mb-10 max-w-2xl mx-auto lg:mx-0 shadow-sm animate-fade-up text-left"
+              style={{ animationDelay: "0.45s" }}
+            >
+              <div className="flex items-center gap-2 font-bold text-emerald-deep text-xs sm:text-sm uppercase tracking-wider mb-1.5">
+                <ShieldCheck className="h-4.5 w-4.5 text-gold shrink-0" />
+                <span>{t.hero.safetyTitle}</span>
+              </div>
+              <p className="text-xs sm:text-sm text-foreground/80 leading-relaxed font-medium">
+                {t.hero.safetyNote}
+              </p>
+            </div>
+          )}
 
           <div
             className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 animate-fade-up"
