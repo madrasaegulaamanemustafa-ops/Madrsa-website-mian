@@ -36,8 +36,8 @@ export function Hero() {
       id="top"
       className="relative min-h-[94vh] flex items-center pt-28 pb-14 sm:pt-32 sm:pb-20 overflow-hidden bg-[#041d15]"
     >
-      {/* Prominent Holy Sanctuary Background Video Layer (Madinah Munawwarah) */}
-      <div className="absolute inset-0 z-0 overflow-hidden">
+      {/* Background Video Layer (Madinah Munawwarah - Pure Video) */}
+      <div className="absolute inset-0 z-0 overflow-hidden bg-black">
         <video
           ref={videoRef}
           autoPlay
@@ -45,41 +45,13 @@ export function Hero() {
           muted={isMuted}
           playsInline
           poster={madinahBg}
-          className="w-full h-full object-cover object-[center_35%] opacity-65 scale-105"
+          className="w-full h-full object-cover object-[center_35%] opacity-85"
         >
           <source src="/images/why-us/home.mp4" type="video/mp4" />
         </video>
-        {/* Cinematic Gradient Overlays for High Contrast & Text Legibility */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#041d15]/95 via-[#041d15]/80 to-[#041d15]/50" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#041d15] via-transparent to-[#041d15]/80" />
-      </div>
-
-      {/* Floating Audio Toggle in Hero */}
-      <button
-        onClick={toggleAudio}
-        type="button"
-        title={isMuted ? "Play Naat Audio" : "Mute Naat Audio"}
-        aria-label={isMuted ? "Play Naat Audio" : "Mute Naat Audio"}
-        className={`absolute bottom-4 ${isRtl ? "left-4" : "right-4"} z-20 inline-flex items-center gap-2 rounded-full bg-black/60 backdrop-blur-md border border-amber-400/50 px-3.5 py-1.5 text-xs font-bold text-amber-300 shadow-gold hover:bg-black/80 hover:scale-105 transition-all duration-300 focus-visible:ring-2 focus-visible:ring-amber-500 cursor-pointer`}
-      >
-        {isMuted ? (
-          <>
-            <VolumeX className="h-3.5 w-3.5 text-amber-300" />
-            <span className="hidden sm:inline">Play Naat</span>
-          </>
-        ) : (
-          <>
-            <Volume2 className="h-3.5 w-3.5 text-amber-300 animate-pulse" />
-            <span className="hidden sm:inline">Mute Naat</span>
-          </>
-        )}
-      </button>
-
-      {/* Ambient Glowing Orbs */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute -top-24 right-10 w-[600px] h-[600px] bg-gold/20 blur-[160px] rounded-full" />
-        <div className="absolute bottom-0 -left-20 w-[550px] h-[550px] bg-emerald-glow/20 blur-[150px] rounded-full" />
-        <div className="absolute inset-0 pattern-overlay opacity-25" />
+        {/* Soft Contrast Gradient Mask for Text Legibility */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-black/30" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/60" />
       </div>
 
       <div className="container mx-auto px-4 relative z-10 flex flex-col lg:flex-row items-center gap-10 lg:gap-14">
@@ -259,6 +231,27 @@ export function Hero() {
           </div>
         </div>
       </div>
+
+      {/* Floating Audio Toggle in Hero Corner */}
+      <button
+        onClick={toggleAudio}
+        type="button"
+        title={isMuted ? "Play Naat Audio" : "Mute Naat Audio"}
+        aria-label={isMuted ? "Play Naat Audio" : "Mute Naat Audio"}
+        className={`absolute bottom-5 ${isRtl ? "left-5" : "right-5"} z-20 inline-flex items-center gap-2 rounded-full bg-black/70 backdrop-blur-md border border-amber-400/60 px-4 py-2 text-xs font-bold text-amber-300 shadow-gold hover:bg-black/90 hover:scale-105 transition-all duration-300 focus-visible:ring-2 focus-visible:ring-amber-500 cursor-pointer`}
+      >
+        {isMuted ? (
+          <>
+            <VolumeX className="h-4 w-4 text-amber-300" />
+            <span className="hidden sm:inline">Play Naat</span>
+          </>
+        ) : (
+          <>
+            <Volume2 className="h-4 w-4 text-amber-300 animate-pulse" />
+            <span className="hidden sm:inline">Mute Naat</span>
+          </>
+        )}
+      </button>
     </section>
   );
 }
