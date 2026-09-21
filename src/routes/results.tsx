@@ -51,15 +51,15 @@ export const Route = createFileRoute("/results")({
 
 function ResultsPage() {
   return (
-    <LangProvider>
+    <>
       <Navbar />
-      <main className="min-h-screen bg-[#FAF8F5] pt-28 pb-24">
+      <main className="pt-28 sm:pt-32 pb-24 min-h-screen bg-[#FAF8F5]">
         <ResultsContent />
       </main>
       <Footer />
       <StickyCTA />
       <DuroodPlayer />
-    </LangProvider>
+    </>
   );
 }
 
@@ -112,9 +112,7 @@ function ResultsContent() {
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
       list = list.filter(
-        (s) =>
-          s.name.toLowerCase().includes(q) ||
-          s.rollNo.toLowerCase().includes(q),
+        (s) => s.name.toLowerCase().includes(q) || s.rollNo.toLowerCase().includes(q),
       );
     }
 

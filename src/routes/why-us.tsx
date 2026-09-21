@@ -17,7 +17,7 @@ export const Route = createFileRoute("/why-us")({
 
 function WhyUs() {
   return (
-    <LangProvider>
+    <>
       <Navbar />
       <main className="pt-32 pb-20 min-h-screen bg-[#FAF8F5]">
         <WhyUsContent />
@@ -25,7 +25,7 @@ function WhyUs() {
       <Footer />
       <StickyCTA />
       <DuroodPlayer />
-    </LangProvider>
+    </>
   );
 }
 

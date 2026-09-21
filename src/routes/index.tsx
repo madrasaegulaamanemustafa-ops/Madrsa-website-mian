@@ -39,7 +39,7 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   return (
-    <LangProvider>
+    <>
       <Navbar />
       <main>
         <Hero />
@@ -57,6 +57,6 @@ function Index() {
       <StickyCTA />
       <AutoPopup />
       <DuroodPlayer />
-    </LangProvider>
+    </>
   );
 }

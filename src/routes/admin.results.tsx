@@ -153,7 +153,8 @@ function AdminContent() {
     if (
       (cleanEmail === expectedEmail && cleanPass === expectedPass) ||
       (cleanEmail === "admin@madrasa.com" && cleanPass === "madrasa@admin786") ||
-      (cleanEmail === "admin" && (cleanPass === "7860" || cleanPass === "madrasa786" || cleanPass === expectedPass))
+      (cleanEmail === "admin" &&
+        (cleanPass === "7860" || cleanPass === "madrasa786" || cleanPass === expectedPass))
     ) {
       setIsAuthenticated(true);
       if (typeof window !== "undefined") {
@@ -399,7 +400,10 @@ function AdminContent() {
 
           <form onSubmit={handleLoginSubmit} className="space-y-4 text-left">
             <div>
-              <label htmlFor="admin-username" className="block text-[11px] font-black uppercase tracking-wider text-emerald-deep mb-1.5">
+              <label
+                htmlFor="admin-username"
+                className="block text-[11px] font-black uppercase tracking-wider text-emerald-deep mb-1.5"
+              >
                 Admin Email / Username
               </label>
               <div className="relative">
@@ -423,7 +427,10 @@ function AdminContent() {
             </div>
 
             <div>
-              <label htmlFor="admin-password" className="block text-[11px] font-black uppercase tracking-wider text-emerald-deep mb-1.5">
+              <label
+                htmlFor="admin-password"
+                className="block text-[11px] font-black uppercase tracking-wider text-emerald-deep mb-1.5"
+              >
                 Password
               </label>
               <div className="relative">
