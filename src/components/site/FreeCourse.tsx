@@ -11,7 +11,10 @@ export function FreeCourse() {
             <div className="absolute inset-0 pattern-overlay opacity-20" />
             <div className="relative z-10">
               <div className="h-16 w-16 mx-auto rounded-2xl bg-gradient-emerald grid place-items-center mb-6 shadow-luxe">
-                <Gift className="h-8 w-8 text-gold animate-bounce" style={{ animationDuration: '3s' }} />
+                <Gift
+                  className="h-8 w-8 text-gold animate-bounce"
+                  style={{ animationDuration: "3s" }}
+                />
               </div>
               <h2 className="font-display text-3xl sm:text-4xl font-extrabold mb-4 text-emerald-deep leading-tight">
                 <span className="text-gradient-gold">{t.free.title}</span>

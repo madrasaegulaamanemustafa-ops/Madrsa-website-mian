@@ -31,7 +31,8 @@ const posters = [
 ];
 
 export function Posters() {
-  const { t } = useLang();
+  const { t, dir } = useLang();
+  const isRtl = dir === "rtl";
   const [activeModalIndex, setActiveModalIndex] = useState<number | null>(null);
 
   const handleOpenModal = (index: number) => {
@@ -55,11 +56,17 @@ export function Posters() {
   // Keyboard navigation for modal
   useEffect(() => {
     if (activeModalIndex === null) return;
-    
+
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") handleCloseModal();
-      if (e.key === "ArrowLeft") handlePrev();
-      if (e.key === "ArrowRight") handleNext();
+      if (e.key === "ArrowLeft") {
+        if (isRtl) handleNext();
+        else handlePrev();
+      }
+      if (e.key === "ArrowRight") {
+        if (isRtl) handlePrev();
+        else handleNext();
+      }
     };
 
     window.addEventListener("keydown", onKeyDown);
@@ -69,28 +76,40 @@ export function Posters() {
       window.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = "unset";
     };
-  }, [activeModalIndex, handlePrev, handleNext]);
+  }, [activeModalIndex, handlePrev, handleNext, isRtl]);
 
   const currentPoster = activeModalIndex !== null ? posters[activeModalIndex] : null;
 
   return (
-    <section id="posters" className="py-24 bg-gradient-beige relative overflow-hidden">
-      <div className="absolute inset-0 pattern-overlay" />
-      <div className="container mx-auto px-4 relative">
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 text-emerald-deep text-xs uppercase tracking-[0.3em] mb-3">
-            <ImageIcon className="h-3.5 w-3.5 text-gold" /> {t.posters.kicker}
+    <section id="posters" className="py-20 lg:py-28 bg-[#FAF8F5] relative overflow-hidden">
+      <div className="absolute inset-0 pattern-overlay opacity-20 pointer-events-none" />
+      <div className="container mx-auto px-4 relative z-10">
+        {/* Header */}
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <div className="inline-flex items-center gap-2 text-emerald-deep bg-emerald-soft px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-[0.25em] mb-4 border border-emerald-deep/15 shadow-subtle">
+            <ImageIcon className="h-3.5 w-3.5 text-amber-600" />
+            <span>{t.posters.kicker}</span>
           </div>
-          <h2 className="font-display text-4xl md:text-5xl font-bold mb-3">{t.posters.title}</h2>
-          <p className="text-muted-foreground max-w-xl mx-auto">{t.posters.desc}</p>
+          <h2 className="font-display text-3xl sm:text-5xl font-extrabold text-emerald-deep mb-3 tracking-tight">
+            {t.posters.title}
+          </h2>
+          <p className="text-foreground/75 max-w-xl mx-auto text-sm sm:text-base font-medium leading-relaxed">
+            {t.posters.desc}
+          </p>
+          <div className="h-1 w-20 bg-gradient-gold mx-auto rounded-full mt-4" />
         </div>
 
+        {/* Gallery Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
           {posters.map((p, index) => (
             <div
               key={p.label}
-              className="group relative block rounded-3xl overflow-hidden bg-card gold-border shadow-soft hover:shadow-luxe transition-all duration-500 hover:-translate-y-1 cursor-pointer"
+              className="group relative block rounded-3xl overflow-hidden bg-white border border-emerald-deep/10 shadow-soft hover:shadow-luxe transition-all duration-500 hover:-translate-y-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-amber-500"
               onClick={() => handleOpenModal(index)}
+              tabIndex={0}
+              role="button"
+              aria-label={`View flyer for ${p.label}`}
+              onKeyDown={(e) => e.key === "Enter" && handleOpenModal(index)}
             >
               <div className="aspect-[3/4] overflow-hidden bg-emerald-deep/5 relative">
                 <img
@@ -99,111 +118,110 @@ export function Posters() {
                   loading="lazy"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
-                
-                {/* Zoom overlay badge */}
-                <div className="absolute top-4 right-4 bg-black/60 hover:bg-black/80 text-white backdrop-blur-md p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
-                  <Maximize2 className="h-4 w-4 text-gold" />
-                </div>
-              </div>
 
-              <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-emerald-deep via-emerald-deep/85 to-transparent">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-sm font-semibold text-gold leading-tight line-clamp-1">{p.label}</span>
-                  <a
-                    href={WHATSAPP_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-gradient-gold px-3.5 py-1.5 text-xs font-bold text-gold-foreground shadow-gold hover:scale-105 transition-transform"
-                  >
-                    <MessageCircle className="h-3.5 w-3.5" />
-                    Join
-                  </a>
+                {/* Hover Overlay with Zoom Icon */}
+                <div className="absolute inset-0 bg-emerald-deep/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2 text-white">
+                  <div className="h-12 w-12 rounded-full bg-white/20 backdrop-blur-md grid place-items-center border border-white/40 shadow-soft">
+                    <Maximize2 className="h-5 w-5 text-white" />
+                  </div>
+                </div>
+
+                <div className="absolute bottom-0 inset-x-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent text-white">
+                  <div className="font-bold text-sm leading-tight drop-shadow-sm line-clamp-1">
+                    {p.label}
+                  </div>
+                  <div className="text-[11px] text-gold-light mt-0.5 font-semibold">
+                    Click to preview flyer
+                  </div>
                 </div>
               </div>
             </div>
           ))}
         </div>
+
+        {/* Lightbox Modal */}
+        {activeModalIndex !== null && currentPoster && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Flyer preview"
+            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 animate-fade-in"
+          >
+            {/* Backdrop */}
+            <div
+              className="absolute inset-0 bg-black/90 backdrop-blur-xl cursor-pointer"
+              onClick={handleCloseModal}
+            />
+
+            {/* Modal Container */}
+            <div className="relative z-10 max-w-2xl w-full bg-white rounded-3xl overflow-hidden shadow-2xl border border-gold/30">
+              {/* Top Bar */}
+              <div className="flex items-center justify-between p-4 border-b border-emerald-deep/10 bg-[#FAF8F5]">
+                <div className="font-display font-bold text-base sm:text-lg text-emerald-deep line-clamp-1">
+                  {currentPoster.label}
+                </div>
+                <button
+                  onClick={handleCloseModal}
+                  aria-label="Close preview"
+                  className="h-10 w-10 rounded-full bg-black/5 hover:bg-black/10 grid place-items-center text-emerald-deep transition-colors focus-visible:ring-2 focus-visible:ring-amber-500"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Image Display */}
+              <div className="relative max-h-[70vh] overflow-auto p-2 bg-black/5 flex items-center justify-center">
+                <img
+                  src={currentPoster.src}
+                  alt={currentPoster.label}
+                  className="max-h-[65vh] w-auto object-contain rounded-2xl"
+                />
+
+                {/* Left/Right Navigation Arrows */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handlePrev();
+                  }}
+                  aria-label="Previous flyer"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-white/90 shadow-luxe hover:bg-white text-emerald-deep grid place-items-center transition-all focus-visible:ring-2 focus-visible:ring-amber-500"
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </button>
+
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleNext();
+                  }}
+                  aria-label="Next flyer"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-white/90 shadow-luxe hover:bg-white text-emerald-deep grid place-items-center transition-all focus-visible:ring-2 focus-visible:ring-amber-500"
+                >
+                  <ChevronRight className="h-6 w-6" />
+                </button>
+              </div>
+
+              {/* Bottom WhatsApp CTA */}
+              <div className="p-4 bg-[#FAF8F5] border-t border-emerald-deep/10 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <span className="text-xs text-muted-foreground font-semibold">
+                  Flyer {activeModalIndex + 1} of {posters.length}
+                </span>
+                <a
+                  href={`https://wa.me/6393741504?text=${encodeURIComponent(
+                    `Assalamu Alaikum! I am inquiring about the "${currentPoster.label}" flyer details.`,
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-emerald text-white px-5 py-2.5 text-xs font-bold shadow-soft hover:scale-105 transition-all w-full sm:w-auto justify-center"
+                >
+                  <MessageCircle className="h-4 w-4 text-gold" />
+                  <span>Inquire on WhatsApp</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
-
-      {/* Fullscreen Poster Lightbox Modal */}
-      {activeModalIndex !== null && currentPoster && (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-between p-4 sm:p-6 animate-fade-in">
-          {/* Backdrop layer */}
-          <div 
-            className="absolute inset-0 bg-black/92 backdrop-blur-xl cursor-pointer"
-            onClick={handleCloseModal}
-          />
-
-          {/* Top Bar */}
-          <div className="relative w-full max-w-5xl flex items-center justify-between z-10 text-white pb-2">
-            <div className="flex items-center gap-3">
-              <span className="bg-gold/20 text-gold text-xs sm:text-sm font-bold px-3 py-1 rounded-full border border-gold/40">
-                {activeModalIndex + 1} / {posters.length}
-              </span>
-              <h3 className="font-display font-bold text-lg sm:text-2xl text-white drop-shadow-md line-clamp-1">
-                {currentPoster.label}
-              </h3>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <a
-                href={WHATSAPP_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-full bg-gradient-gold text-gold-foreground px-4 py-1.5 text-xs sm:text-sm font-bold shadow-gold hover:scale-105 transition-transform"
-              >
-                <MessageCircle className="h-4 w-4" />
-                <span>Join Course</span>
-              </a>
-              <button
-                onClick={handleCloseModal}
-                className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer hover:scale-110 shadow-md"
-                aria-label="Close modal"
-              >
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-          </div>
-
-          {/* Center Image View */}
-          <div className="relative w-full max-w-4xl flex-1 flex items-center justify-center my-2 z-10">
-            {/* Left Nav Button */}
-            <button
-              onClick={handlePrev}
-              className="absolute left-0 sm:-left-8 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-black/60 hover:bg-black/80 text-white border border-white/20 transition-all cursor-pointer hover:scale-110 shadow-2xl backdrop-blur-md"
-              aria-label="Previous poster"
-            >
-              <ChevronLeft className="h-6 w-6 sm:h-8 sm:w-8" />
-            </button>
-
-            {/* Poster Image */}
-            <div className="max-h-[76vh] w-full flex items-center justify-center">
-              <img
-                src={currentPoster.src}
-                alt={currentPoster.label}
-                className="max-h-[76vh] max-w-full object-contain rounded-2xl shadow-2xl border border-gold/30 ring-1 ring-white/10"
-              />
-            </div>
-
-            {/* Right Nav Button */}
-            <button
-              onClick={handleNext}
-              className="absolute right-0 sm:-right-8 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-black/60 hover:bg-black/80 text-white border border-white/20 transition-all cursor-pointer hover:scale-110 shadow-2xl backdrop-blur-md"
-              aria-label="Next poster"
-            >
-              <ChevronRight className="h-6 w-6 sm:h-8 sm:w-8" />
-            </button>
-          </div>
-
-          {/* Bottom Bar Caption */}
-          <div className="relative w-full max-w-md text-center bg-black/50 backdrop-blur-md border border-white/10 rounded-2xl py-2.5 px-4 text-white/90 z-10 shadow-xl">
-            <span className="text-xs sm:text-sm font-semibold text-gold">
-              {currentPoster.label}
-            </span>
-          </div>
-        </div>
-      )}
     </section>
   );
 }

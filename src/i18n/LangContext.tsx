@@ -18,7 +18,7 @@ export function LangProvider({ children }: { children: ReactNode }) {
   };
 
   const t = translations[lang] as unknown as Translation;
-  const dir = (translations[lang].dir as "ltr" | "rtl");
+  const dir = translations[lang].dir as "ltr" | "rtl";
 
   useEffect(() => {
     if (typeof document !== "undefined") {
@@ -38,6 +38,7 @@ export function useLang() {
 
 export const WHATSAPP_URL = "https://wa.me/6393741504?text=I%20want%20to%20join%20Madrasa%20course";
 export const WHATSAPP_CHANNEL_URL = "https://whatsapp.com/channel/0029VaAeDDHAInPexC2Aji0l";
-export const INSTAGRAM_URL = "https://www.instagram.com/madrasaegulamaanemustafa?stkn=MWQyZDcxZWlqYnFpOA==&utm_source=ig_contact_invite";
+export const INSTAGRAM_URL =
+  "https://www.instagram.com/madrasaegulamaanemustafa?stkn=MWQyZDcxZWlqYnFpOA==&utm_source=ig_contact_invite";
 export const FACEBOOK_URL = "https://www.facebook.com/share/19Q4b5gukV/";
 export const YOUTUBE_URL = "https://youtube.com/@madarsaegulaamanemustafa?si=ga6T97C9ZOGdcVhm";

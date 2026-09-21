@@ -19,9 +19,16 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Madrasa E Gulaaman E Mustafa ﷺ — Online Islamic Institute | ₹300/month" },
-      { name: "description", content: "Learn Deen online from anywhere. 9 Islamic & skill courses at just ₹300/month. Live + recorded classes, separate male/female sections, offline certificate." },
+      {
+        name: "description",
+        content:
+          "Learn Deen online from anywhere. 9 Islamic & skill courses at just ₹300/month. Live + recorded classes, separate male/female sections, offline certificate.",
+      },
       { property: "og:title", content: "Madrasa E Gulaaman E Mustafa ﷺ — Learn Deen Online" },
-      { property: "og:description", content: "9 Islamic courses for ₹300/month. Live + recorded classes. Worldwide access." },
+      {
+        property: "og:description",
+        content: "9 Islamic courses for ₹300/month. Live + recorded classes. Worldwide access.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

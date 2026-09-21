@@ -1,51 +1,86 @@
 import { useLang, WHATSAPP_URL } from "@/i18n/LangContext";
+import madinahBg from "@/assets/madinah-hero-bg.jpg";
 import heroImg from "@/assets/hero-mosque.jpg";
-import { Check, MessageCircle, GraduationCap, Sparkles, BookOpen, Star, ShieldCheck } from "lucide-react";
+import {
+  Check,
+  MessageCircle,
+  GraduationCap,
+  Sparkles,
+  BookOpen,
+  Star,
+  ShieldCheck,
+  Users,
+  Award,
+} from "lucide-react";
 
 export function Hero() {
-  const { t } = useLang();
-  
+  const { t, dir } = useLang();
+  const isRtl = dir === "rtl";
+
   return (
-    <section id="top" className="relative min-h-[92vh] flex items-center pt-32 pb-20 overflow-hidden bg-background">
-      {/* Dynamic Ambient Background Elements */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-32 right-0 w-[700px] h-[700px] bg-emerald-glow/15 blur-[140px] rounded-full" />
-        <div className="absolute bottom-0 -left-20 w-[550px] h-[550px] bg-gold/15 blur-[130px] rounded-full" />
-        <div className="absolute inset-0 pattern-overlay opacity-50" />
+    <section
+      id="top"
+      className="relative min-h-[94vh] flex items-center pt-28 pb-14 sm:pt-32 sm:pb-20 overflow-hidden bg-[#041d15]"
+    >
+      {/* Prominent Holy Sanctuary Background Layer (Madinah Munawwarah) */}
+      <div className="absolute inset-0 z-0 overflow-hidden">
+        <img
+          src={madinahBg}
+          alt="Masjid an-Nabawi Madinah Munawwarah"
+          loading="eager"
+          className="w-full h-full object-cover object-center opacity-70 scale-105"
+        />
+        {/* Cinematic Gradient Overlays for High Contrast & Text Legibility */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#041d15]/95 via-[#041d15]/80 to-[#041d15]/50" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#041d15] via-transparent to-[#041d15]/80" />
       </div>
 
-      <div className="container mx-auto px-4 relative z-10 flex flex-col lg:flex-row items-center gap-12 lg:gap-14">
-        
+      {/* Ambient Glowing Orbs */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute -top-24 right-10 w-[600px] h-[600px] bg-gold/20 blur-[160px] rounded-full" />
+        <div className="absolute bottom-0 -left-20 w-[550px] h-[550px] bg-emerald-glow/20 blur-[150px] rounded-full" />
+        <div className="absolute inset-0 pattern-overlay opacity-25" />
+      </div>
+
+      <div className="container mx-auto px-4 relative z-10 flex flex-col lg:flex-row items-center gap-10 lg:gap-14">
         {/* Left Column: Content */}
-        <div className="flex-1 text-center lg:text-left pt-6 lg:pt-0">
-          
-          {/* Top Badge */}
-          <div className="inline-flex items-center gap-2 rounded-full bg-emerald-soft border border-emerald-deep/15 px-5 py-2 mb-6 animate-fade-up shadow-subtle">
-            <Sparkles className="h-4 w-4 text-emerald-deep animate-spin" style={{ animationDuration: '6s' }} />
-            <span className="text-xs sm:text-sm font-extrabold tracking-widest text-emerald-deep uppercase">
+        <div className="flex-1 text-center lg:text-start pt-2 lg:pt-0">
+          {/* Top Badge with Shimmer */}
+          <div className="inline-flex items-center gap-2 rounded-full bg-black/60 backdrop-blur-md border border-amber-400/80 px-4 sm:px-5 py-1.5 sm:py-2 mb-4 sm:mb-6 animate-fade-up shadow-[0_0_20px_rgba(212,175,55,0.4)]">
+            <Sparkles
+              className="h-4 w-4 text-amber-300 animate-spin"
+              style={{ animationDuration: "8s" }}
+            />
+            <span className="text-[11px] sm:text-xs font-black tracking-widest text-amber-300 uppercase drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
               {t.hero.badge}
             </span>
           </div>
 
-          {/* Salam Greeting */}
-          <div className="mb-6 animate-fade-up" style={{ animationDelay: "0.1s" }}>
-            <h2 className="font-arabic text-3xl sm:text-4xl md:text-5xl font-bold text-gradient-gold drop-shadow-sm tracking-wide" dir="rtl">
+          {/* Sacred Salam Greeting */}
+          <div className="mb-4 sm:mb-5 animate-fade-up" style={{ animationDelay: "0.1s" }}>
+            <h2
+              lang="ar"
+              dir="rtl"
+              className="font-arabic text-3xl sm:text-4xl md:text-5xl font-bold text-gradient-gold-bright drop-shadow-md tracking-wide"
+            >
               اَلسَلامُ عَلَيْكُم وَرَحْمَةُ اَللهِ وَبَرَكاتُه
             </h2>
           </div>
 
           {/* Main Title */}
           <h1
-            className="font-display text-4xl sm:text-6xl md:text-7xl font-extrabold text-emerald-deep leading-[1.12] mb-6 tracking-tight animate-fade-up"
+            className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white leading-[1.12] mb-4 sm:mb-6 tracking-tight animate-fade-up drop-shadow-sm"
             style={{ animationDelay: "0.2s" }}
           >
-            {t.hero.title.split(" ").slice(0, -3).join(" ")}<br />
-            <span className="text-gradient-gold">{t.hero.title.split(" ").slice(-3).join(" ")}</span>
+            {t.hero.title.split(" ").slice(0, -3).join(" ")}{" "}
+            <span className="text-gradient-gold-bright block sm:inline">
+              {t.hero.title.split(" ").slice(-3).join(" ")}
+            </span>
           </h1>
 
           {/* Subtitle */}
           <p
-            className="text-base sm:text-lg md:text-xl text-foreground/75 max-w-2xl mx-auto lg:mx-0 mb-8 animate-fade-up font-medium leading-relaxed"
+            className="text-base sm:text-lg md:text-xl text-white/90 max-w-2xl mx-auto lg:mx-0 mb-6 sm:mb-8 animate-fade-up font-medium leading-relaxed drop-shadow"
             style={{ animationDelay: "0.3s" }}
           >
             {t.hero.subtitle}
@@ -53,35 +88,35 @@ export function Hero() {
 
           {/* Trust Badges */}
           <div
-            className="flex flex-wrap items-center justify-center lg:justify-start gap-2.5 sm:gap-3 mb-8 animate-fade-up"
+            className="flex flex-wrap items-center justify-center lg:justify-start gap-2 sm:gap-3 mb-6 sm:mb-8 animate-fade-up"
             style={{ animationDelay: "0.4s" }}
           >
             {t.hero.trust.map((tr) => (
-              <div 
-                key={tr} 
-                className="flex items-center gap-2 text-xs sm:text-sm text-foreground/85 font-bold bg-white/85 backdrop-blur-md px-3.5 py-2 rounded-xl border border-emerald-deep/10 shadow-subtle hover:border-gold/40 hover:shadow-soft transition-all duration-300"
+              <div
+                key={tr}
+                className="flex items-center gap-2 text-xs sm:text-sm text-white font-bold bg-black/40 backdrop-blur-xl px-3.5 py-1.5 sm:py-2 rounded-xl border border-white/20 shadow-sm hover:border-gold/50 hover:bg-black/60 transition-all duration-300"
               >
-                <div className="h-5 w-5 rounded-full bg-gradient-emerald grid place-items-center shrink-0 shadow-sm">
-                  <Check className="h-3 w-3 text-gold" />
+                <div className="h-5 w-5 rounded-full bg-gradient-gold grid place-items-center shrink-0 shadow-sm">
+                  <Check className="h-3 w-3 text-gold-foreground stroke-[3]" />
                 </div>
                 <span>{tr}</span>
               </div>
             ))}
           </div>
 
-          {/* Teacher Separation & Safety Highlight */}
+          {/* Teacher Separation & Privacy Highlight */}
           {t.hero.safetyNote && (
             <div
-              className="bg-white/90 backdrop-blur-xl border border-emerald-deep/15 rounded-2xl p-4 sm:p-5 mb-8 max-w-2xl mx-auto lg:mx-0 shadow-soft hover:shadow-luxe transition-all duration-300 text-left gold-border-glow"
+              className="bg-black/55 backdrop-blur-xl border border-amber-400/40 rounded-2xl p-4 sm:p-5 mb-6 sm:mb-8 max-w-2xl mx-auto lg:mx-0 shadow-luxe text-start gold-border-glow"
               style={{ animationDelay: "0.45s" }}
             >
-              <div className="flex items-center gap-2 font-bold text-emerald-deep text-xs sm:text-sm uppercase tracking-wider mb-2">
-                <div className="h-6 w-6 rounded-lg bg-gold/20 grid place-items-center">
-                  <ShieldCheck className="h-4 w-4 text-emerald-deep shrink-0" />
+              <div className="flex items-center gap-2 font-bold text-amber-300 text-xs sm:text-sm uppercase tracking-wider mb-2">
+                <div className="h-6 w-6 rounded-lg bg-amber-400/20 grid place-items-center">
+                  <ShieldCheck className="h-4 w-4 text-amber-300 shrink-0" />
                 </div>
                 <span>{t.hero.safetyTitle}</span>
               </div>
-              <p className="text-xs sm:text-sm text-foreground/80 leading-relaxed font-medium">
+              <p className="text-xs sm:text-sm text-white/90 leading-relaxed font-medium">
                 {t.hero.safetyNote}
               </p>
             </div>
@@ -89,78 +124,101 @@ export function Hero() {
 
           {/* CTA Buttons */}
           <div
-            className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 animate-fade-up"
+            className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3.5 sm:gap-4 animate-fade-up"
             style={{ animationDelay: "0.5s" }}
           >
             <a
               href={WHATSAPP_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="group relative inline-flex items-center gap-3 rounded-2xl bg-gradient-emerald px-8 py-4 text-base font-bold text-white shadow-luxe hover:scale-105 transition-all duration-300 w-full sm:w-auto justify-center overflow-hidden"
+              className="animate-light-sweep group relative inline-flex items-center gap-3 rounded-2xl bg-gradient-gold px-8 py-3.5 sm:py-4 text-sm sm:text-base font-black text-gold-foreground shadow-gold hover:scale-105 transition-all duration-300 w-full sm:w-auto justify-center focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-              <MessageCircle className="h-5 w-5 text-gold" />
+              <MessageCircle className="h-5 w-5 fill-gold-foreground" />
               <span>{t.hero.cta1}</span>
             </a>
-            
+
             <a
               href={WHATSAPP_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-3 rounded-2xl bg-white px-8 py-4 text-base font-bold text-emerald-deep border border-emerald-deep/15 shadow-soft hover:border-gold/50 hover:bg-emerald-soft/50 transition-all duration-300 w-full sm:w-auto justify-center"
+              className="inline-flex items-center gap-3 rounded-2xl bg-white/15 backdrop-blur-xl px-8 py-3.5 sm:py-4 text-sm sm:text-base font-bold text-white border border-white/30 shadow-soft hover:border-amber-400/70 hover:bg-white/25 transition-all duration-300 w-full sm:w-auto justify-center focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2"
             >
-              <GraduationCap className="h-5 w-5 text-emerald-deep" />
+              <GraduationCap className="h-5 w-5 text-amber-300" />
               <span>{t.hero.cta2}</span>
             </a>
           </div>
         </div>
 
-        {/* Right Column: Visuals & Floating Cards */}
-        <div className="flex-1 relative hidden lg:block w-full min-h-[560px] animate-fade-up" style={{ animationDelay: "0.6s" }}>
-          
-          {/* Main Visual Frame */}
-          <div className="relative mx-auto max-w-[460px] rounded-[2.5rem] bg-gradient-emerald p-1.5 shadow-luxe transform rotate-2 hover:rotate-0 transition-transform duration-700 ease-out">
-            <div className="relative rounded-[2.2rem] overflow-hidden bg-emerald-deep/90">
-              <img 
-                src={heroImg} 
-                alt="Islamic Education" 
-                className="w-full h-[500px] object-cover opacity-85 hover:scale-105 transition-transform duration-700" 
+        {/* Right Column: 3D Islamic Arch Visual Frame & Floating Badges */}
+        <div
+          className="flex-1 relative hidden lg:block w-full min-h-[560px] animate-fade-up"
+          style={{ animationDelay: "0.6s" }}
+        >
+          {/* Main Visual Frame with Islamic Arch Top */}
+          <div className="relative mx-auto max-w-[460px] rounded-3xl bg-gradient-gold p-1.5 shadow-luxe transform rotate-1 hover:rotate-0 transition-transform duration-700 ease-out">
+            <div className="relative rounded-[1.4rem] overflow-hidden bg-black/40">
+              <img
+                src={heroImg}
+                alt="Madrasa E Gulaaman E Mustafa Live Online Education"
+                className="w-full h-[500px] object-cover opacity-95 hover:scale-105 transition-transform duration-700"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-emerald-deep/90 via-emerald-deep/30 to-transparent" />
-              
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+
               <div className="absolute bottom-6 inset-x-6 text-white text-center">
                 <div className="font-display text-2xl font-bold text-gold-light mb-1">
                   Madrasa E Gulaaman E Mustafa ﷺ
                 </div>
-                <div className="text-xs text-white/80 font-medium uppercase tracking-widest">
-                  Live & Recorded Online Islamic Classes
+                <div className="text-xs text-white/90 font-semibold uppercase tracking-widest flex items-center justify-center gap-2">
+                  <Award className="h-3.5 w-3.5 text-gold" />
+                  <span>ISO & Offline Certified Institute</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Floating Card 1: Premium Aalimiyat */}
-          <div className="absolute -left-4 top-1/4 bg-white/95 backdrop-blur-2xl border border-emerald-deep/10 p-4 sm:p-5 rounded-3xl shadow-soft animate-float flex items-center gap-4">
-            <div className="h-12 w-12 rounded-2xl bg-gradient-gold grid place-items-center text-white shrink-0 shadow-gold">
+          {/* Floating Card 1: Live Batch */}
+          <div
+            className={`absolute ${isRtl ? "-right-6" : "-left-6"} top-1/5 bg-white/95 backdrop-blur-2xl border border-emerald-deep/10 p-4 sm:p-5 rounded-2xl shadow-soft animate-float-slow flex items-center gap-4`}
+          >
+            <div className="h-12 w-12 rounded-xl bg-gradient-gold grid place-items-center text-white shrink-0 shadow-gold">
               <Star className="h-6 w-6 fill-white text-white" />
             </div>
             <div>
-              <div className="text-[11px] font-extrabold text-emerald-deep/70 uppercase tracking-wider mb-0.5">Live Batch</div>
-              <div className="font-display font-extrabold text-lg text-emerald-deep leading-none">Dars-e-Nizami</div>
+              <div className="text-[11px] font-extrabold text-emerald-deep/70 uppercase tracking-wider mb-0.5">
+                Live Online Batch
+              </div>
+              <div className="font-display font-extrabold text-lg text-emerald-deep leading-none">
+                Dars-e-Nizami
+              </div>
             </div>
           </div>
 
-          {/* Floating Card 2: 12+ Courses Flat Fee */}
-          <div className="absolute -right-2 bottom-1/4 bg-white/95 backdrop-blur-2xl border border-emerald-deep/10 p-4 sm:p-5 rounded-3xl shadow-soft animate-float flex items-center gap-4" style={{ animationDelay: "2.5s" }}>
-            <div className="h-12 w-12 rounded-2xl bg-gradient-emerald grid place-items-center text-gold shrink-0 shadow-sm">
+          {/* Floating Card 2: 9 Courses Flat Fee */}
+          <div
+            className={`absolute ${isRtl ? "-left-4" : "-right-4"} bottom-1/4 bg-white/95 backdrop-blur-2xl border border-emerald-deep/10 p-4 sm:p-5 rounded-2xl shadow-soft animate-float-slow flex items-center gap-4`}
+            style={{ animationDelay: "3s" }}
+          >
+            <div className="h-12 w-12 rounded-xl bg-gradient-emerald grid place-items-center text-gold shrink-0 shadow-sm">
               <BookOpen className="h-6 w-6" />
             </div>
             <div>
-              <div className="text-[11px] font-extrabold text-emerald-deep/70 uppercase tracking-wider mb-0.5">Mega Offer</div>
-              <div className="font-display font-extrabold text-lg text-emerald-deep leading-none">₹300 / Month</div>
+              <div className="text-[11px] font-extrabold text-emerald-deep/70 uppercase tracking-wider mb-0.5">
+                Mega Offer
+              </div>
+              <div className="font-display font-extrabold text-lg text-emerald-deep leading-none">
+                ₹300 / Month
+              </div>
             </div>
           </div>
 
+          {/* Floating Card 3: 5000+ Students Worldwide */}
+          <div className="absolute left-1/4 -bottom-4 bg-black/80 backdrop-blur-2xl border border-gold/40 px-5 py-3 rounded-2xl shadow-gold flex items-center gap-3">
+            <Users className="h-5 w-5 text-gold-light" />
+            <div className="text-xs font-bold text-white">
+              <span className="text-gold-light font-extrabold">5,000+</span> Students Enrolled
+              Worldwide
+            </div>
+          </div>
         </div>
       </div>
     </section>

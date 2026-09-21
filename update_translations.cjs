@@ -1,6 +1,6 @@
-const fs = require('fs');
+const fs = require("fs");
 
-let content = fs.readFileSync('src/i18n/translations.ts', 'utf8');
+let content = fs.readFileSync("src/i18n/translations.ts", "utf8");
 
 const enItems = `items: [
         {
@@ -282,18 +282,18 @@ const hiItems = `items: [
       ]`;
 
 function replaceItems(langBlock, newItemsStr) {
-    const startIdx = content.indexOf(langBlock + ': {');
-    if (startIdx === -1) return;
-    
-    const itemsStart = content.indexOf('items: [', startIdx);
-    const itemsEnd = content.indexOf(']', itemsStart) + 1;
-    
-    content = content.substring(0, itemsStart) + newItemsStr + content.substring(itemsEnd);
+  const startIdx = content.indexOf(langBlock + ": {");
+  if (startIdx === -1) return;
+
+  const itemsStart = content.indexOf("items: [", startIdx);
+  const itemsEnd = content.indexOf("]", itemsStart) + 1;
+
+  content = content.substring(0, itemsStart) + newItemsStr + content.substring(itemsEnd);
 }
 
-replaceItems('en', enItems);
-replaceItems('ur', urItems);
-replaceItems('hi', hiItems);
+replaceItems("en", enItems);
+replaceItems("ur", urItems);
+replaceItems("hi", hiItems);
 
-fs.writeFileSync('src/i18n/translations.ts', content, 'utf8');
-console.log('Done replacing translations');
+fs.writeFileSync("src/i18n/translations.ts", content, "utf8");
+console.log("Done replacing translations");
