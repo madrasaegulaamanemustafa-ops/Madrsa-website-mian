@@ -167,13 +167,6 @@ function ResultsContent() {
               <Sparkles className="h-4 w-4 text-amber-300" />
               <span>Live Verified Ranks</span>
             </div>
-            <Link
-              to="/admin/results"
-              className="flex items-center gap-1.5 bg-gold/20 hover:bg-gold/30 text-amber-200 px-3.5 py-1.5 rounded-full border border-gold/50 transition-colors"
-            >
-              <Lock className="h-3.5 w-3.5 text-gold" />
-              <span>Admin Portal Login</span>
-            </Link>
           </div>
         </div>
       </div>

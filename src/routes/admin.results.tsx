@@ -58,18 +58,23 @@ export const Route = createFileRoute("/admin/results")({
 
 function AdminResultsPage() {
   return (
-    <LangProvider>
-      <Navbar />
-      <main className="min-h-screen bg-[#FAF8F5] pt-28 pb-24">
-        <AdminContent />
-      </main>
-      <Footer />
-    </LangProvider>
+    <div className="min-h-screen bg-[#FAF8F5] flex flex-col justify-between">
+      <AdminContent />
+      <footer className="py-6 border-t border-emerald-deep/10 text-center text-xs text-foreground/60">
+        Madrasa E Gulaaman E Mustafa ﷺ — Secure Administrative Portal
+      </footer>
+    </div>
   );
 }
 
 function AdminContent() {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      return sessionStorage.getItem("mgm_admin_authenticated") === "true";
+    }
+    return false;
+  });
+
   const [enteredEmail, setEnteredEmail] = useState<string>("");
   const [enteredPassword, setEnteredPassword] = useState<string>("");
   const [loginError, setLoginError] = useState<string>("");
@@ -108,7 +113,7 @@ function AdminContent() {
     remarks: "",
   });
 
-  // Load data asynchronously in background without blocking
+  // Fast background data synchronizer (only called after authentication)
   const loadAllData = async () => {
     try {
       const [stuData, clsData, setDoc] = await Promise.all([
@@ -120,19 +125,15 @@ function AdminContent() {
       setClasses(clsData);
       setSettings(setDoc);
     } catch (e) {
-      console.error(e);
+      console.error("Background sync error:", e);
     }
   };
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const sessionAuth = sessionStorage.getItem("mgm_admin_authenticated");
-      if (sessionAuth === "true") {
-        setIsAuthenticated(true);
-      }
+    if (isAuthenticated) {
+      loadAllData();
     }
-    loadAllData();
-  }, []);
+  }, [isAuthenticated]);
 
   const showStatus = (type: "success" | "error", text: string) => {
     setStatusMsg({ type, text });
