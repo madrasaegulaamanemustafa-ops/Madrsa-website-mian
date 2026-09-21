@@ -1,4 +1,3 @@
-import { useState, useRef } from "react";
 import { useLang, WHATSAPP_URL } from "@/i18n/LangContext";
 import madinahBg from "@/assets/madinah-hero-bg.jpg";
 import heroImg from "@/assets/hero-mosque.jpg";
@@ -11,38 +10,23 @@ import {
   Users,
   Award,
   Star,
-  Volume2,
-  VolumeX,
 } from "lucide-react";
 
 export function Hero() {
   const { t, dir } = useLang();
   const isRtl = dir === "rtl";
-  const [isMuted, setIsMuted] = useState(true);
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  const toggleAudio = () => {
-    if (videoRef.current) {
-      videoRef.current.muted = !videoRef.current.muted;
-      setIsMuted(videoRef.current.muted);
-      if (!videoRef.current.muted) {
-        videoRef.current.play().catch(() => {});
-      }
-    }
-  };
 
   return (
     <section
       id="top"
       className="relative min-h-[94vh] flex items-center pt-28 pb-14 sm:pt-32 sm:pb-20 overflow-hidden bg-[#041d15]"
     >
-      {/* Background Video Layer (Madinah Munawwarah - Pure Video) */}
+      {/* Background Video Layer (Madinah Munawwarah - Silent Pure Video) */}
       <div className="absolute inset-0 z-0 overflow-hidden bg-black">
         <video
-          ref={videoRef}
           autoPlay
           loop
-          muted={isMuted}
+          muted
           playsInline
           poster={madinahBg}
           className="w-full h-full object-cover object-[center_35%] opacity-85"
@@ -231,27 +215,6 @@ export function Hero() {
           </div>
         </div>
       </div>
-
-      {/* Floating Audio Toggle in Hero Corner */}
-      <button
-        onClick={toggleAudio}
-        type="button"
-        title={isMuted ? "Play Naat Audio" : "Mute Naat Audio"}
-        aria-label={isMuted ? "Play Naat Audio" : "Mute Naat Audio"}
-        className={`absolute bottom-5 ${isRtl ? "left-5" : "right-5"} z-20 inline-flex items-center gap-2 rounded-full bg-black/70 backdrop-blur-md border border-amber-400/60 px-4 py-2 text-xs font-bold text-amber-300 shadow-gold hover:bg-black/90 hover:scale-105 transition-all duration-300 focus-visible:ring-2 focus-visible:ring-amber-500 cursor-pointer`}
-      >
-        {isMuted ? (
-          <>
-            <VolumeX className="h-4 w-4 text-amber-300" />
-            <span className="hidden sm:inline">Play Naat</span>
-          </>
-        ) : (
-          <>
-            <Volume2 className="h-4 w-4 text-amber-300 animate-pulse" />
-            <span className="hidden sm:inline">Mute Naat</span>
-          </>
-        )}
-      </button>
     </section>
   );
 }

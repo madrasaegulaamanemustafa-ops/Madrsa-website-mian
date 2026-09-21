@@ -14,6 +14,7 @@ import { Footer } from "@/components/site/Footer";
 import { StickyCTA } from "@/components/site/StickyCTA";
 import { AutoPopup } from "@/components/site/AutoPopup";
 import { KidsCourse } from "@/components/site/KidsCourse";
+import { DuroodPlayer } from "@/components/site/DuroodPlayer";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -55,6 +56,7 @@ function Index() {
       <Footer />
       <StickyCTA />
       <AutoPopup />
+      <DuroodPlayer />
     </LangProvider>
   );
 }

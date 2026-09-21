@@ -70,6 +70,12 @@ export function Navbar() {
               <Star className="h-3.5 w-3.5 fill-gold text-gold animate-pulse" />
               <span>{t.nav.about}</span>
             </Link>
+            <Link
+              to="/results"
+              className="px-4 py-2 rounded-full text-sm font-bold text-amber-900 bg-amber-400/20 border border-amber-400/40 hover:bg-amber-400 hover:text-amber-950 transition-all duration-300"
+            >
+              🏆 {t.nav.results}
+            </Link>
             <a
               href="/#offer"
               className="px-4 py-2 rounded-full text-sm font-semibold text-emerald-deep hover:bg-white hover:shadow-sm transition-all duration-300"
@@ -165,6 +171,16 @@ export function Navbar() {
               </span>
               <span className="text-[10px] uppercase tracking-wider bg-black/20 px-2.5 py-0.5 rounded-full">
                 New
+              </span>
+            </Link>
+            <Link
+              onClick={() => setOpen(false)}
+              to="/results"
+              className="py-3 px-4 rounded-xl bg-amber-400/20 text-amber-900 border border-amber-400/40 flex items-center justify-between shadow-sm transition-all duration-300"
+            >
+              <span>🏆 {t.nav.results}</span>
+              <span className="text-[10px] uppercase font-black bg-amber-400 text-amber-950 px-2 py-0.5 rounded-full">
+                Top 5
               </span>
             </Link>
             <a

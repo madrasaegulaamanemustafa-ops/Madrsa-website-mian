@@ -10,12 +10,33 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WhyUsRouteImport } from './routes/why-us'
+import { Route as ResultsRouteImport } from './routes/results'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AdminResultsRouteImport } from './routes/admin.results'
 import { Route as IndexRouteImport } from './routes/index'
 
 const WhyUsRoute = WhyUsRouteImport.update({
   id: '/why-us',
   path: '/why-us',
   getParentRoute: () => rootRouteImport,
+} as any)
+
+const ResultsRoute = ResultsRouteImport.update({
+  id: '/results',
+  path: '/results',
+  getParentRoute: () => rootRouteImport,
+} as any)
+
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+
+const AdminResultsRoute = AdminResultsRouteImport.update({
+  id: '/results',
+  path: '/results',
+  getParentRoute: () => AdminRoute,
 } as any)
 
 const IndexRoute = IndexRouteImport.update({
@@ -26,28 +47,44 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/results': typeof ResultsRoute
   '/why-us': typeof WhyUsRoute
+  '/admin/results': typeof AdminResultsRoute
 }
+
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/results': typeof ResultsRoute
   '/why-us': typeof WhyUsRoute
+  '/admin/results': typeof AdminResultsRoute
 }
+
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/results': typeof ResultsRoute
   '/why-us': typeof WhyUsRoute
+  '/admin/results': typeof AdminResultsRoute
 }
+
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/why-us'
+  fullPaths: '/' | '/admin' | '/results' | '/why-us' | '/admin/results'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/why-us'
-  id: '__root__' | '/' | '/why-us'
+  to: '/' | '/admin' | '/results' | '/why-us' | '/admin/results'
+  id: '__root__' | '/' | '/admin' | '/results' | '/why-us' | '/admin/results'
   fileRoutesById: FileRoutesById
 }
+
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
+  ResultsRoute: typeof ResultsRoute
   WhyUsRoute: typeof WhyUsRoute
+  AdminResultsRoute: typeof AdminResultsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -59,6 +96,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/results': {
+      id: '/results'
+      path: '/results'
+      fullPath: '/results'
+      preLoaderRoute: typeof ResultsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/why-us': {
       id: '/why-us'
       path: '/why-us'
@@ -66,13 +117,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WhyUsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/results': {
+      id: '/admin/results'
+      path: '/admin/results'
+      fullPath: '/admin/results'
+      preLoaderRoute: typeof AdminResultsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
+  ResultsRoute: ResultsRoute,
   WhyUsRoute: WhyUsRoute,
+  AdminResultsRoute: AdminResultsRoute,
 }
+
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()

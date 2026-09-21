@@ -100,12 +100,12 @@ export function StickyCTA() {
         </button>
       </div>
 
-      {/* Floating Left Quick Apply Badge */}
+      {/* Floating Left Quick Apply Badge (Stacked above Durood Player) */}
       <a
         href={WHATSAPP_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-6 left-6 z-40 hidden md:inline-flex items-center gap-2 rounded-full bg-gradient-gold px-5 py-3 text-xs sm:text-sm font-extrabold text-gold-foreground shadow-gold hover:scale-105 transition-all duration-300 border border-gold/40"
+        className="fixed bottom-20 left-6 z-40 hidden md:inline-flex items-center gap-2 rounded-full bg-gradient-gold px-5 py-2.5 text-xs sm:text-sm font-extrabold text-gold-foreground shadow-gold hover:scale-105 transition-all duration-300 border border-gold/40"
       >
         <GraduationCap className="h-4 w-4" />
         <span>{t.floating}</span>

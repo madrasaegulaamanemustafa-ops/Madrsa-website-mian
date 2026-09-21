@@ -2,7 +2,15 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { translations, type Lang, type Translation } from "./translations";
 
 type Ctx = { lang: Lang; setLang: (l: Lang) => void; t: Translation; dir: "ltr" | "rtl" };
-const LangCtx = createContext<Ctx | null>(null);
+
+const defaultCtx: Ctx = {
+  lang: "en",
+  setLang: () => {},
+  t: translations.en as unknown as Translation,
+  dir: "ltr",
+};
+
+const LangCtx = createContext<Ctx>(defaultCtx);
 
 export function LangProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>("en");
@@ -32,8 +40,7 @@ export function LangProvider({ children }: { children: ReactNode }) {
 
 export function useLang() {
   const ctx = useContext(LangCtx);
-  if (!ctx) throw new Error("useLang must be used inside LangProvider");
-  return ctx;
+  return ctx || defaultCtx;
 }
 
 export const WHATSAPP_URL = "https://wa.me/6393741504?text=I%20want%20to%20join%20Madrasa%20course";

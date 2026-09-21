@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import {
   useLang,
   WHATSAPP_URL,
@@ -6,7 +7,17 @@ import {
   FACEBOOK_URL,
   YOUTUBE_URL,
 } from "@/i18n/LangContext";
-import { Instagram, Youtube, Facebook, MessageCircle, Radio, Phone, Sparkles } from "lucide-react";
+import {
+  Instagram,
+  Youtube,
+  Facebook,
+  MessageCircle,
+  Radio,
+  Phone,
+  Sparkles,
+  Trophy,
+  Lock,
+} from "lucide-react";
 
 export function Footer() {
   const { t } = useLang();
@@ -125,9 +136,29 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Copyright */}
-        <div className="text-center text-xs text-foreground/60 pt-8 font-medium">
-          © {new Date().getFullYear()} {t.brand}. {t.footer.rights}
+        {/* Bottom Bar: Copyright & Quick Links */}
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-foreground/60 font-medium">
+          <div>
+            © {new Date().getFullYear()} {t.brand}. {t.footer.rights}
+          </div>
+
+          <div className="flex items-center gap-5">
+            <Link
+              to="/results"
+              className="hover:text-emerald-deep font-bold flex items-center gap-1.5 transition-colors"
+            >
+              <Trophy className="h-3.5 w-3.5 text-amber-600" />
+              <span>Student Results</span>
+            </Link>
+
+            <Link
+              to="/admin/results"
+              className="hover:text-emerald-deep font-bold flex items-center gap-1.5 transition-colors"
+            >
+              <Lock className="h-3.5 w-3.5" />
+              <span>Admin Portal</span>
+            </Link>
+          </div>
         </div>
       </div>
     </footer>
