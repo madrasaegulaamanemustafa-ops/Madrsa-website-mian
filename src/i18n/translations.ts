@@ -27,7 +27,7 @@ export const translations = {
       safetyNote:
         "Female students are taught by female Aalimas, Muftiyas, and Qariyas. Male students are taught by male Aalim and Muftis. Personal (one-on-one) and group classes are both available. This ensures complete safety and a comfortable learning environment for everyone.",
       cta1: "Join Now on WhatsApp",
-      cta2: "Get Free Demo Class",
+      cta2: "Explore All Courses",
       cta3: "Apply for Admission",
     },
     offer: {
@@ -361,7 +361,7 @@ export const translations = {
       safetyNote:
         "طالبات کو باصلاحیت خواتین عالمہ، مفتیہ اور قاریہ پڑھاتی ہیں، جبکہ طلباء کو مرد عالم اور مفتی پڑھاتے ہیں۔ پرسنل (ون آن ون) اور گروپ کلاسز دونوں کی سہولت دستیاب ہے۔ اس سے ہر ایک کے لیے مکمل حفاظت، پردہ اور پرسکون تعلیمی ماحول یقینی بنتا ہے۔",
       cta1: "واٹس ایپ پر جوائن کریں",
-      cta2: "مفت ڈیمو کلاس",
+      cta2: "تمام کورسز دیکھیں",
       cta3: "داخلے کے لیے درخواست",
     },
     offer: {
@@ -679,7 +679,7 @@ export const translations = {
       safetyNote:
         "छात्राओं को महिला आलिमा, मुफ़्तिया और क़ारिया पढ़ाती हैं, जबकि छात्रों को पुरुष आलिम और मुफ़्ती पढ़ाते हैं। पर्सनल (वन-ऑन-वन) और ग्रुप क्लासेज दोनों उपलब्ध हैं। यह सभी के लिए पूर्ण सुरक्षा और आरामदायक सीखने का माहौल सुनिश्चित करता है।",
       cta1: "व्हाट्सएप पर जॉइन करें",
-      cta2: "फ्री डेमो क्लास",
+      cta2: "सभी कोर्सेस देखें",
       cta3: "एडमिशन के लिए आवेदन",
     },
     offer: {

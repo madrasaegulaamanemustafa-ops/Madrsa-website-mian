@@ -58,12 +58,25 @@ export function Footer() {
         </div>
 
         {/* 3-Column Footer Information */}
-        <div className="grid md:grid-cols-3 gap-10 max-w-5xl mx-auto pb-12 border-b border-emerald-deep/10">
-          <div>
-            <div className="font-display text-2xl font-bold text-emerald-deep mb-3">{t.brand}</div>
-            <p className="text-sm text-foreground/75 leading-relaxed font-medium">
-              {t.footer.tagline}
-            </p>
+        <div className="grid md:grid-cols-3 gap-10 max-w-5xl mx-auto pb-12 border-b border-emerald-deep/10 items-start">
+          <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row items-start sm:items-center md:items-start gap-4">
+            <div className="relative shrink-0">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white p-1.5 border border-gold/40 shadow-soft grid place-items-center">
+                <img
+                  src="/images/why-us/logo.png"
+                  alt="Madrasa E Gulaaman E Mustafa ﷺ Official Seal"
+                  className="w-full h-full object-contain drop-shadow-sm hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+            </div>
+            <div>
+              <div className="font-display text-2xl font-bold text-emerald-deep mb-2">
+                {t.brand}
+              </div>
+              <p className="text-sm text-foreground/75 leading-relaxed font-medium">
+                {t.footer.tagline}
+              </p>
+            </div>
           </div>
 
           <div>

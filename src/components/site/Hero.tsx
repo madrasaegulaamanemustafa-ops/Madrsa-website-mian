@@ -1,39 +1,79 @@
+import { useState, useRef } from "react";
 import { useLang, WHATSAPP_URL } from "@/i18n/LangContext";
 import madinahBg from "@/assets/madinah-hero-bg.jpg";
 import heroImg from "@/assets/hero-mosque.jpg";
 import {
   Check,
   MessageCircle,
-  GraduationCap,
   Sparkles,
   BookOpen,
-  Star,
   ShieldCheck,
   Users,
   Award,
+  Star,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 
 export function Hero() {
   const { t, dir } = useLang();
   const isRtl = dir === "rtl";
+  const [isMuted, setIsMuted] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const toggleAudio = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !videoRef.current.muted;
+      setIsMuted(videoRef.current.muted);
+      if (!videoRef.current.muted) {
+        videoRef.current.play().catch(() => {});
+      }
+    }
+  };
 
   return (
     <section
       id="top"
       className="relative min-h-[94vh] flex items-center pt-28 pb-14 sm:pt-32 sm:pb-20 overflow-hidden bg-[#041d15]"
     >
-      {/* Prominent Holy Sanctuary Background Layer (Madinah Munawwarah) */}
+      {/* Prominent Holy Sanctuary Background Video Layer (Madinah Munawwarah) */}
       <div className="absolute inset-0 z-0 overflow-hidden">
-        <img
-          src={madinahBg}
-          alt="Masjid an-Nabawi Madinah Munawwarah"
-          loading="eager"
-          className="w-full h-full object-cover object-center opacity-70 scale-105"
-        />
+        <video
+          ref={videoRef}
+          autoPlay
+          loop
+          muted={isMuted}
+          playsInline
+          poster={madinahBg}
+          className="w-full h-full object-cover object-[center_35%] opacity-65 scale-105"
+        >
+          <source src="/images/why-us/home.mp4" type="video/mp4" />
+        </video>
         {/* Cinematic Gradient Overlays for High Contrast & Text Legibility */}
         <div className="absolute inset-0 bg-gradient-to-r from-[#041d15]/95 via-[#041d15]/80 to-[#041d15]/50" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#041d15] via-transparent to-[#041d15]/80" />
       </div>
+
+      {/* Floating Audio Toggle in Hero */}
+      <button
+        onClick={toggleAudio}
+        type="button"
+        title={isMuted ? "Play Naat Audio" : "Mute Naat Audio"}
+        aria-label={isMuted ? "Play Naat Audio" : "Mute Naat Audio"}
+        className={`absolute bottom-4 ${isRtl ? "left-4" : "right-4"} z-20 inline-flex items-center gap-2 rounded-full bg-black/60 backdrop-blur-md border border-amber-400/50 px-3.5 py-1.5 text-xs font-bold text-amber-300 shadow-gold hover:bg-black/80 hover:scale-105 transition-all duration-300 focus-visible:ring-2 focus-visible:ring-amber-500 cursor-pointer`}
+      >
+        {isMuted ? (
+          <>
+            <VolumeX className="h-3.5 w-3.5 text-amber-300" />
+            <span className="hidden sm:inline">Play Naat</span>
+          </>
+        ) : (
+          <>
+            <Volume2 className="h-3.5 w-3.5 text-amber-300 animate-pulse" />
+            <span className="hidden sm:inline">Mute Naat</span>
+          </>
+        )}
+      </button>
 
       {/* Ambient Glowing Orbs */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
@@ -61,9 +101,9 @@ export function Hero() {
             <h2
               lang="ar"
               dir="rtl"
-              className="font-arabic text-3xl sm:text-4xl md:text-5xl font-bold text-gradient-gold-bright drop-shadow-md tracking-wide"
+              className="font-arabic text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-amber-400 drop-shadow-[0_2px_12px_rgba(212,175,55,0.5)] tracking-wide leading-relaxed sm:leading-loose py-1"
             >
-              اَلسَلامُ عَلَيْكُم وَرَحْمَةُ اَللهِ وَبَرَكاتُه
+              اَلسَّلَامُ عَلَيْكُمْ وَرَحْمَةُ اللهِ وَبَرَكَاتُهُ
             </h2>
           </div>
 
@@ -138,12 +178,10 @@ export function Hero() {
             </a>
 
             <a
-              href={WHATSAPP_URL}
-              target="_blank"
-              rel="noopener noreferrer"
+              href="#courses"
               className="inline-flex items-center gap-3 rounded-2xl bg-white/15 backdrop-blur-xl px-8 py-3.5 sm:py-4 text-sm sm:text-base font-bold text-white border border-white/30 shadow-soft hover:border-amber-400/70 hover:bg-white/25 transition-all duration-300 w-full sm:w-auto justify-center focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2"
             >
-              <GraduationCap className="h-5 w-5 text-amber-300" />
+              <BookOpen className="h-5 w-5 text-amber-300" />
               <span>{t.hero.cta2}</span>
             </a>
           </div>
