@@ -412,11 +412,11 @@ function AdminContent() {
                     setEnteredEmail(e.target.value);
                     setLoginError("");
                   }}
-                  placeholder="admin@madrasa.com"
+                  placeholder="Enter admin email or username"
                   autoComplete="username"
                   autoFocus
                   required
-                  className="w-full text-left text-sm font-semibold rounded-2xl border-2 border-emerald-deep/20 pl-10 pr-4 py-3 text-emerald-deep focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-400/20 bg-emerald-soft/20 font-mono"
+                  className="w-full text-left text-sm font-semibold rounded-2xl border-2 border-emerald-deep/20 pl-10 pr-4 py-3 text-emerald-deep focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-400/20 bg-emerald-soft/20"
                 />
                 <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-deep/50" />
               </div>
@@ -436,9 +436,10 @@ function AdminContent() {
                     setEnteredPassword(e.target.value);
                     setLoginError("");
                   }}
-                  placeholder="madrasa@admin786 or 7860"
+                  placeholder="••••••••••••"
                   autoComplete="current-password"
-                  className="w-full text-left text-sm font-semibold rounded-2xl border-2 border-emerald-deep/20 pl-10 pr-11 py-3 text-emerald-deep focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-400/20 bg-emerald-soft/20 font-mono"
+                  required
+                  className="w-full text-left text-sm font-semibold rounded-2xl border-2 border-emerald-deep/20 pl-10 pr-11 py-3 text-emerald-deep focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-400/20 bg-emerald-soft/20"
                 />
                 <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-deep/50" />
                 <button
