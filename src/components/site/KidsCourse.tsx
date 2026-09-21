@@ -92,6 +92,7 @@ export function KidsCourse() {
                 src={kidsPoster}
                 alt="Online Kids Special Course - Ages 5 to 13"
                 loading="lazy"
+                decoding="async"
                 className="w-full h-auto object-cover rounded-[2.2rem] group-hover:scale-105 transition-transform duration-700"
               />
             </div>

@@ -11,6 +11,8 @@ export function Offer() {
         <img
           src={makkahBg}
           alt="Masjid al-Haram Makkah Mukarramah"
+          loading="lazy"
+          decoding="async"
           className="w-full h-full object-cover object-center opacity-10 scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-[#FAF8F5] via-[#FAF8F5]/85 to-[#FAF8F5]" />

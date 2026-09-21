@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+import { supabase, withTimeout, isSupabaseConfigured } from "./supabase";
 
 export interface StudentResult {
   id: string;
@@ -14,6 +14,28 @@ export interface StudentResult {
   term: string; // e.g. "Monthly Fatah-E-Battle — 2026"
   avatar?: string;
   dateAdded?: string;
+}
+
+interface SupabaseClassRow {
+  id: string;
+  name: string;
+  description?: string | null;
+  order_num?: number | null;
+}
+
+interface SupabaseStudentRow {
+  id: string;
+  name: string;
+  roll_no?: string | null;
+  class_id: string;
+  class_name: string;
+  rank: number;
+  percentage: number | string;
+  marks_obtained?: string | null;
+  grade?: string | null;
+  remarks?: string | null;
+  term?: string | null;
+  avatar?: string | null;
 }
 
 export interface ClassCategory {
@@ -315,7 +337,9 @@ export function getLocalSettings(): ResultsSettings {
   try {
     const local = localStorage.getItem(LOCAL_STORAGE_KEY_SETTINGS);
     if (local) return { ...DEFAULT_SETTINGS, ...JSON.parse(local) };
-  } catch {}
+  } catch (err) {
+    console.warn("Error reading local settings:", err);
+  }
   return DEFAULT_SETTINGS;
 }
 
@@ -324,10 +348,14 @@ export function getLocalClasses(): ClassCategory[] {
   try {
     const local = localStorage.getItem(LOCAL_STORAGE_KEY_CLASSES);
     if (local) return JSON.parse(local);
-  } catch {}
+  } catch (err) {
+    console.warn("Error reading local classes:", err);
+  }
   try {
     localStorage.setItem(LOCAL_STORAGE_KEY_CLASSES, JSON.stringify(DEFAULT_CLASSES));
-  } catch {}
+  } catch (err) {
+    console.warn("Error caching default classes:", err);
+  }
   return DEFAULT_CLASSES;
 }
 
@@ -336,10 +364,14 @@ export function getLocalStudents(): StudentResult[] {
   try {
     const local = localStorage.getItem(LOCAL_STORAGE_KEY_STUDENTS);
     if (local) return JSON.parse(local);
-  } catch {}
+  } catch (err) {
+    console.warn("Error reading local students:", err);
+  }
   try {
     localStorage.setItem(LOCAL_STORAGE_KEY_STUDENTS, JSON.stringify(DEFAULT_STUDENTS));
-  } catch {}
+  } catch (err) {
+    console.warn("Error caching default students:", err);
+  }
   return DEFAULT_STUDENTS;
 }
 
@@ -347,13 +379,9 @@ export function getLocalStudents(): StudentResult[] {
 export async function getResultsSettings(): Promise<ResultsSettings> {
   const current = getLocalSettings();
 
-  // Non-blocking background sync from Supabase
-  try {
-    supabase
-      .from("settings")
-      .select("*")
-      .eq("id", "results_config")
-      .single()
+  // Non-blocking background sync only if Supabase is configured
+  if (typeof window !== "undefined" && isSupabaseConfigured()) {
+    withTimeout(supabase.from("settings").select("*").eq("id", "results_config").single(), 2500)
       .then(({ data, error }) => {
         if (data && !error) {
           const mapped: ResultsSettings = {
@@ -370,8 +398,10 @@ export async function getResultsSettings(): Promise<ResultsSettings> {
           localStorage.setItem(LOCAL_STORAGE_KEY_SETTINGS, JSON.stringify(mapped));
         }
       })
-      .catch(() => {});
-  } catch {}
+      .catch((err) => {
+        console.debug("Settings sync skipped:", err?.message);
+      });
+  }
 
   return current;
 }
@@ -380,21 +410,26 @@ export async function saveResultsSettings(settings: ResultsSettings): Promise<vo
   if (typeof window !== "undefined") {
     localStorage.setItem(LOCAL_STORAGE_KEY_SETTINGS, JSON.stringify(settings));
   }
+  if (!isSupabaseConfigured()) return;
+
   try {
-    await supabase.from("settings").upsert({
-      id: "results_config",
-      display_limit: settings.displayLimit,
-      active_exam_title: settings.activeExamTitle,
-      session_year: settings.sessionYear,
-      admin_pin: settings.adminPin || "7860",
-      admin_email: settings.adminEmail,
-      admin_password: settings.adminPassword,
-      show_roll_numbers: settings.showRollNumbers,
-      show_percentages: settings.showPercentages,
-      banner_notice: settings.bannerNotice,
-    });
+    await withTimeout(
+      supabase.from("settings").upsert({
+        id: "results_config",
+        display_limit: settings.displayLimit,
+        active_exam_title: settings.activeExamTitle,
+        session_year: settings.sessionYear,
+        admin_pin: settings.adminPin || "7860",
+        admin_email: settings.adminEmail,
+        admin_password: settings.adminPassword,
+        show_roll_numbers: settings.showRollNumbers,
+        show_percentages: settings.showPercentages,
+        banner_notice: settings.bannerNotice,
+      }),
+      2500,
+    );
   } catch (error) {
-    console.warn("Supabase sync offline, saved locally:", error);
+    console.warn("Supabase sync offline/timed out, saved locally:", error);
   }
 }
 
@@ -402,25 +437,24 @@ export async function saveResultsSettings(settings: ResultsSettings): Promise<vo
 export async function getClasses(): Promise<ClassCategory[]> {
   const current = getLocalClasses();
 
-  // Background sync from Supabase
-  try {
-    supabase
-      .from("classes")
-      .select("*")
-      .order("order_num", { ascending: true })
+  // Background sync only if Supabase is configured
+  if (typeof window !== "undefined" && isSupabaseConfigured()) {
+    withTimeout(supabase.from("classes").select("*").order("order_num", { ascending: true }), 2500)
       .then(({ data, error }) => {
         if (data && data.length > 0 && !error) {
-          const mapped: ClassCategory[] = data.map((d: any) => ({
+          const mapped: ClassCategory[] = (data as SupabaseClassRow[]).map((d) => ({
             id: d.id,
             name: d.name,
-            description: d.description,
+            description: d.description || undefined,
             order: d.order_num ?? 1,
           }));
           localStorage.setItem(LOCAL_STORAGE_KEY_CLASSES, JSON.stringify(mapped));
         }
       })
-      .catch(() => {});
-  } catch {}
+      .catch((err) => {
+        console.debug("Classes sync skipped:", err?.message);
+      });
+  }
 
   return current;
 }
@@ -437,16 +471,20 @@ export async function saveClass(cls: ClassCategory): Promise<void> {
   if (typeof window !== "undefined") {
     localStorage.setItem(LOCAL_STORAGE_KEY_CLASSES, JSON.stringify(updated));
   }
+  if (!isSupabaseConfigured()) return;
 
   try {
-    await supabase.from("classes").upsert({
-      id: cls.id,
-      name: cls.name,
-      description: cls.description || null,
-      order_num: cls.order,
-    });
+    await withTimeout(
+      supabase.from("classes").upsert({
+        id: cls.id,
+        name: cls.name,
+        description: cls.description || null,
+        order_num: cls.order,
+      }),
+      2500,
+    );
   } catch (error) {
-    console.warn("Supabase saveClass offline, saved locally:", error);
+    console.warn("Supabase saveClass offline/timed out, saved locally:", error);
   }
 }
 
@@ -456,11 +494,12 @@ export async function deleteClass(classId: string): Promise<void> {
   if (typeof window !== "undefined") {
     localStorage.setItem(LOCAL_STORAGE_KEY_CLASSES, JSON.stringify(updated));
   }
+  if (!isSupabaseConfigured()) return;
 
   try {
-    await supabase.from("classes").delete().eq("id", classId);
+    await withTimeout(supabase.from("classes").delete().eq("id", classId), 2500);
   } catch (error) {
-    console.warn("Supabase deleteClass offline, saved locally:", error);
+    console.warn("Supabase deleteClass offline/timed out, saved locally:", error);
   }
 }
 
@@ -468,15 +507,12 @@ export async function deleteClass(classId: string): Promise<void> {
 export async function getStudents(): Promise<StudentResult[]> {
   const current = getLocalStudents();
 
-  // Background sync from Supabase
-  try {
-    supabase
-      .from("students")
-      .select("*")
-      .order("rank", { ascending: true })
+  // Background sync only if Supabase is configured
+  if (typeof window !== "undefined" && isSupabaseConfigured()) {
+    withTimeout(supabase.from("students").select("*").order("rank", { ascending: true }), 2500)
       .then(({ data, error }) => {
         if (data && data.length > 0 && !error) {
-          const mapped: StudentResult[] = data.map((d: any) => ({
+          const mapped: StudentResult[] = (data as SupabaseStudentRow[]).map((d) => ({
             id: d.id,
             name: d.name,
             rollNo: d.roll_no || "",
@@ -488,13 +524,15 @@ export async function getStudents(): Promise<StudentResult[]> {
             grade: d.grade || "Mumtaz (A+)",
             remarks: d.remarks || "",
             term: d.term || "Annual Examination",
-            avatar: d.avatar,
+            avatar: d.avatar || undefined,
           }));
           localStorage.setItem(LOCAL_STORAGE_KEY_STUDENTS, JSON.stringify(mapped));
         }
       })
-      .catch(() => {});
-  } catch {}
+      .catch((err) => {
+        console.debug("Students sync skipped:", err?.message);
+      });
+  }
 
   return current;
 }
@@ -511,24 +549,28 @@ export async function saveStudent(student: StudentResult): Promise<void> {
   if (typeof window !== "undefined") {
     localStorage.setItem(LOCAL_STORAGE_KEY_STUDENTS, JSON.stringify(updated));
   }
+  if (!isSupabaseConfigured()) return;
 
   try {
-    await supabase.from("students").upsert({
-      id: student.id,
-      name: student.name,
-      roll_no: student.rollNo || null,
-      class_id: student.classId,
-      class_name: student.className,
-      rank: student.rank,
-      percentage: student.percentage,
-      marks_obtained: student.marksObtained || null,
-      grade: student.grade || "Mumtaz (A+)",
-      remarks: student.remarks || null,
-      term: student.term,
-      avatar: student.avatar || null,
-    });
+    await withTimeout(
+      supabase.from("students").upsert({
+        id: student.id,
+        name: student.name,
+        roll_no: student.rollNo || null,
+        class_id: student.classId,
+        class_name: student.className,
+        rank: student.rank,
+        percentage: student.percentage,
+        marks_obtained: student.marksObtained || null,
+        grade: student.grade || "Mumtaz (A+)",
+        remarks: student.remarks || null,
+        term: student.term,
+        avatar: student.avatar || null,
+      }),
+      2500,
+    );
   } catch (error) {
-    console.warn("Supabase saveStudent offline, saved locally:", error);
+    console.warn("Supabase saveStudent offline/timed out, saved locally:", error);
   }
 }
 
@@ -538,25 +580,71 @@ export async function deleteStudent(studentId: string): Promise<void> {
   if (typeof window !== "undefined") {
     localStorage.setItem(LOCAL_STORAGE_KEY_STUDENTS, JSON.stringify(updated));
   }
+  if (!isSupabaseConfigured()) return;
 
   try {
-    await supabase.from("students").delete().eq("id", studentId);
+    await withTimeout(supabase.from("students").delete().eq("id", studentId), 2500);
   } catch (error) {
-    console.warn("Supabase deleteStudent offline, saved locally:", error);
+    console.warn("Supabase deleteStudent offline/timed out, saved locally:", error);
   }
 }
 
-// Seed initial dataset directly to Supabase on admin demand
+// Seed initial dataset directly to LocalStorage and bulk-sync to Supabase in a single batch
 export async function seedAllDefaultsToSupabase(): Promise<void> {
-  await saveResultsSettings(DEFAULT_SETTINGS);
-  for (const cls of DEFAULT_CLASSES) {
-    await saveClass(cls);
+  if (typeof window !== "undefined") {
+    localStorage.setItem(LOCAL_STORAGE_KEY_SETTINGS, JSON.stringify(DEFAULT_SETTINGS));
+    localStorage.setItem(LOCAL_STORAGE_KEY_CLASSES, JSON.stringify(DEFAULT_CLASSES));
+    localStorage.setItem(LOCAL_STORAGE_KEY_STUDENTS, JSON.stringify(DEFAULT_STUDENTS));
   }
-  for (const stu of DEFAULT_STUDENTS) {
-    await saveStudent(stu);
+  if (!isSupabaseConfigured()) return;
+
+  try {
+    // 1. Settings
+    await withTimeout(
+      supabase.from("settings").upsert({
+        id: "results_config",
+        display_limit: DEFAULT_SETTINGS.displayLimit,
+        active_exam_title: DEFAULT_SETTINGS.activeExamTitle,
+        session_year: DEFAULT_SETTINGS.sessionYear,
+        admin_pin: DEFAULT_SETTINGS.adminPin || "7860",
+        admin_email: DEFAULT_SETTINGS.adminEmail,
+        admin_password: DEFAULT_SETTINGS.adminPassword,
+        show_roll_numbers: DEFAULT_SETTINGS.showRollNumbers,
+        show_percentages: DEFAULT_SETTINGS.showPercentages,
+        banner_notice: DEFAULT_SETTINGS.bannerNotice,
+      }),
+      3000,
+    );
+
+    // 2. Bulk upsert classes
+    const classesPayload = DEFAULT_CLASSES.map((c) => ({
+      id: c.id,
+      name: c.name,
+      description: c.description || null,
+      order_num: c.order,
+    }));
+    await withTimeout(supabase.from("classes").upsert(classesPayload), 3000);
+
+    // 3. Bulk upsert students
+    const studentsPayload = DEFAULT_STUDENTS.map((s) => ({
+      id: s.id,
+      name: s.name,
+      roll_no: s.rollNo || null,
+      class_id: s.classId,
+      class_name: s.className,
+      rank: s.rank,
+      percentage: s.percentage,
+      marks_obtained: s.marksObtained || null,
+      grade: s.grade || "Mumtaz (A+)",
+      remarks: s.remarks || null,
+      term: s.term,
+      avatar: s.avatar || null,
+    }));
+    await withTimeout(supabase.from("students").upsert(studentsPayload), 3000);
+  } catch (error) {
+    console.warn("Supabase bulk seed skipped/timed out, defaults loaded locally:", error);
   }
 }
 
-// Alias for backward compatibility
-export const seedAllDefaultsToFirebase = seedAllDefaultsToSupabase;
-
+// Alias for database seeding
+export const seedAllDefaultsToDatabase = seedAllDefaultsToSupabase;

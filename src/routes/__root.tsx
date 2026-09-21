@@ -30,37 +30,34 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Madrasa E Gulamaan E Mustafa ﷺ" },
+      { title: "Madrasa E Gulaaman E Mustafa ﷺ" },
       {
         name: "description",
         content:
-          "Madrasa Glow offers premium online Islamic education with a modern, luxurious, and spiritual website.",
+          "Madrasa E Gulaaman E Mustafa ﷺ offers authentic online Islamic education, Dars-e-Nizami, Tajweed, Muballiga, and Kids courses.",
       },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Madrasa E Gulamaan E Mustafa ﷺ" },
+      { name: "author", content: "Madrasa E Gulaaman E Mustafa ﷺ" },
+      { property: "og:title", content: "Madrasa E Gulaaman E Mustafa ﷺ" },
       {
         property: "og:description",
         content:
-          "Madrasa Glow offers premium online Islamic education with a modern, luxurious, and spiritual website.",
+          "Authentic online Islamic education, Dars-e-Nizami, Tajweed, Muballiga, and Kids courses worldwide.",
       },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
-      { name: "twitter:title", content: "Madrasa E Gulamaan E Mustafa ﷺ" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Madrasa E Gulaaman E Mustafa ﷺ" },
       {
         name: "twitter:description",
         content:
-          "Madrasa Glow offers premium online Islamic education with a modern, luxurious, and spiritual website.",
+          "Authentic online Islamic education, Dars-e-Nizami, Tajweed, Muballiga, and Kids courses worldwide.",
       },
       {
         property: "og:image",
-        content:
-          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/29bd0760-4c2b-4b28-a921-a01fa8149d5d/id-preview-5dccdd9b--b92a6e69-55b1-47ec-aff0-150c0f4f4d35.lovable.app-1777722981087.png",
+        content: "/logo.png",
       },
       {
         name: "twitter:image",
-        content:
-          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/29bd0760-4c2b-4b28-a921-a01fa8149d5d/id-preview-5dccdd9b--b92a6e69-55b1-47ec-aff0-150c0f4f4d35.lovable.app-1777722981087.png",
+        content: "/logo.png",
       },
     ],
     links: [
@@ -76,24 +73,9 @@ export const Route = createRootRoute({
       },
     ],
   }),
-  shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
 });
-
-function RootShell({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  );
-}
 
 function RootComponent() {
   return (

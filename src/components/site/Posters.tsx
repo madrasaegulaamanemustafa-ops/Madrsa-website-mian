@@ -116,6 +116,7 @@ export function Posters() {
                   src={p.src}
                   alt={p.label}
                   loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
 

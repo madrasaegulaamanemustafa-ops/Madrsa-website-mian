@@ -9,8 +9,9 @@ export function DuroodPlayer() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    // Create audio instance
+    // Create audio instance with lazy preload
     const audio = new Audio("/DUROOD SHARIF.mp3");
+    audio.preload = "none";
     audio.loop = true;
     audio.volume = 0.35; // Gentle background volume
     audioRef.current = audio;

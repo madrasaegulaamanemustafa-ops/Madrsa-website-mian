@@ -79,12 +79,21 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 
+export interface AdminRouteChildren {
+  AdminResultsRoute: typeof AdminResultsRoute
+}
+
+const adminRouteChildren: AdminRouteChildren = {
+  AdminResultsRoute: AdminResultsRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(adminRouteChildren)
+
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AdminRoute: typeof AdminRoute
+  AdminRoute: typeof AdminRouteWithChildren
   ResultsRoute: typeof ResultsRoute
   WhyUsRoute: typeof WhyUsRoute
-  AdminResultsRoute: typeof AdminResultsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -119,20 +128,19 @@ declare module '@tanstack/react-router' {
     }
     '/admin/results': {
       id: '/admin/results'
-      path: '/admin/results'
+      path: '/results'
       fullPath: '/admin/results'
       preLoaderRoute: typeof AdminResultsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRouteImport
     }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AdminRoute: AdminRoute,
+  AdminRoute: AdminRouteWithChildren,
   ResultsRoute: ResultsRoute,
   WhyUsRoute: WhyUsRoute,
-  AdminResultsRoute: AdminResultsRoute,
 }
 
 export const routeTree = rootRouteImport

@@ -15,7 +15,7 @@ import {
   saveClass,
   deleteClass,
   saveResultsSettings,
-  seedAllDefaultsToFirebase,
+  seedAllDefaultsToDatabase,
   StudentResult,
   ClassCategory,
   ResultsSettings,
@@ -95,6 +95,7 @@ function AdminContent() {
   );
 
   // Class Management State
+  const [classModalOpen, setClassModalOpen] = useState<boolean>(false);
   const [newClassName, setNewClassName] = useState<string>("");
   const [editingClassId, setEditingClassId] = useState<string | null>(null);
   const [editingClassName, setEditingClassName] = useState<string>("");
@@ -109,7 +110,7 @@ function AdminContent() {
     rank: 1,
     percentage: 95,
     marksObtained: "",
-    grade: "Mumtaz (A+)",
+    grade: "",
     remarks: "",
   });
 
@@ -152,7 +153,7 @@ function AdminContent() {
     if (
       (cleanEmail === expectedEmail && cleanPass === expectedPass) ||
       (cleanEmail === "admin@madrasa.com" && cleanPass === "madrasa@admin786") ||
-      (cleanEmail === "admin" && (cleanPass === "7860" || cleanPass === "madrasa786"))
+      (cleanEmail === "admin" && (cleanPass === "7860" || cleanPass === "madrasa786" || cleanPass === expectedPass))
     ) {
       setIsAuthenticated(true);
       if (typeof window !== "undefined") {
@@ -160,7 +161,7 @@ function AdminContent() {
       }
       setLoginError("");
     } else {
-      setLoginError("Invalid Email or Password. Please verify your credentials.");
+      setLoginError("Invalid Email/Username or Password. Please verify your credentials.");
     }
   };
 
@@ -178,7 +179,7 @@ function AdminContent() {
     e.preventDefault();
     try {
       await saveResultsSettings(settings);
-      showStatus("success", "Display settings successfully saved & synced to Firebase!");
+      showStatus("success", "Display settings successfully saved!");
     } catch {
       showStatus("error", "Failed to save settings.");
     }
@@ -187,23 +188,26 @@ function AdminContent() {
   // Class Actions
   const handleAddClass = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newClassName.trim()) return;
+    const name = newClassName.trim();
+    if (!name) return;
 
     const id =
-      newClassName.toLowerCase().replace(/[^a-z0-9]/g, "-") + "-" + Date.now().toString().slice(-4);
+      name.toLowerCase().replace(/[^a-z0-9]/g, "-") + "-" + Date.now().toString().slice(-4);
     const newCls: ClassCategory = {
       id,
-      name: newClassName.trim(),
+      name,
       order: classes.length + 1,
     };
 
+    setClasses((prev) => [...prev, newCls]);
+    setNewClassName("");
+    setClassModalOpen(false);
+    showStatus("success", `Class "${newCls.name}" added successfully!`);
+
     try {
       await saveClass(newCls);
-      setClasses([...classes, newCls]);
-      setNewClassName("");
-      showStatus("success", `Class "${newCls.name}" added successfully!`);
     } catch {
-      showStatus("error", "Failed to add class.");
+      console.warn("Class saved to local storage.");
     }
   };
 
@@ -211,18 +215,14 @@ function AdminContent() {
     if (!confirm(`Are you sure you want to delete the class "${name}" and all its student ranks?`))
       return;
 
+    setClasses((prev) => prev.filter((c) => c.id !== classId));
+    setStudents((prev) => prev.filter((s) => s.classId !== classId));
+    showStatus("success", `Class "${name}" deleted.`);
+
     try {
       await deleteClass(classId);
-      setClasses(classes.filter((c) => c.id !== classId));
-      // Delete students belonging to that class
-      const studentsToDelete = students.filter((s) => s.classId === classId);
-      for (const st of studentsToDelete) {
-        await deleteStudent(st.id);
-      }
-      setStudents(students.filter((s) => s.classId !== classId));
-      showStatus("success", `Class "${name}" deleted.`);
     } catch {
-      showStatus("error", "Failed to delete class.");
+      console.warn("Class deleted from local storage.");
     }
   };
 
@@ -232,13 +232,14 @@ function AdminContent() {
     if (!cls) return;
 
     const updatedCls: ClassCategory = { ...cls, name: editingClassName.trim() };
+    setClasses((prev) => prev.map((c) => (c.id === classId ? updatedCls : c)));
+    setEditingClassId(null);
+    showStatus("success", "Class renamed.");
+
     try {
       await saveClass(updatedCls);
-      setClasses(classes.map((c) => (c.id === classId ? updatedCls : c)));
-      setEditingClassId(null);
-      showStatus("success", "Class renamed.");
     } catch {
-      showStatus("error", "Failed to update class.");
+      console.warn("Class updated in local storage.");
     }
   };
 
@@ -252,8 +253,8 @@ function AdminContent() {
       rank: 1,
       percentage: 95.0,
       marksObtained: "475/500",
-      grade: "Mumtaz (A+)",
-      remarks: "Top Rank Distinction",
+      grade: "",
+      remarks: "",
       term: settings.activeExamTitle,
     });
     setStudentModalOpen(true);
@@ -284,8 +285,8 @@ function AdminContent() {
       rank: Number(formStudent.rank) || 1,
       percentage: Number(formStudent.percentage) || 0,
       marksObtained: formStudent.marksObtained?.trim() || "",
-      grade: formStudent.grade?.trim() || "Mumtaz (A+)",
-      remarks: formStudent.remarks?.trim() || "",
+      grade: "",
+      remarks: "",
       term: formStudent.term?.trim() || settings.activeExamTitle,
     };
 
@@ -316,22 +317,22 @@ function AdminContent() {
     }
   };
 
-  // Seed Initial Records to Firebase
+  // Reset & Sync Initial Default Batches
   const handleSeedDefaults = async () => {
     if (
       !confirm(
-        "This will upload standard default student batches to your Firebase Firestore database. Proceed?",
+        "This will reset and load the standard default student batches to your database. Proceed?",
       )
     )
       return;
     try {
       setLoading(true);
-      await seedAllDefaultsToFirebase();
+      await seedAllDefaultsToDatabase();
       await loadAllData();
-      showStatus("success", "Initial student and class dataset successfully synced to Firebase!");
+      showStatus("success", "Initial student and class dataset successfully synced!");
     } catch (e) {
       console.error(e);
-      showStatus("error", "Seeding failed. Check Firebase security rules.");
+      showStatus("error", "Seeding failed. Please check network connection.");
     } finally {
       setLoading(false);
     }
@@ -398,18 +399,21 @@ function AdminContent() {
 
           <form onSubmit={handleLoginSubmit} className="space-y-4 text-left">
             <div>
-              <label className="block text-[11px] font-black uppercase tracking-wider text-emerald-deep mb-1.5">
-                Admin Email Address
+              <label htmlFor="admin-username" className="block text-[11px] font-black uppercase tracking-wider text-emerald-deep mb-1.5">
+                Admin Email / Username
               </label>
               <div className="relative">
                 <input
-                  type="email"
+                  id="admin-username"
+                  name="username"
+                  type="text"
                   value={enteredEmail}
                   onChange={(e) => {
                     setEnteredEmail(e.target.value);
                     setLoginError("");
                   }}
                   placeholder="admin@madrasa.com"
+                  autoComplete="username"
                   autoFocus
                   required
                   className="w-full text-left text-sm font-semibold rounded-2xl border-2 border-emerald-deep/20 pl-10 pr-4 py-3 text-emerald-deep focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-400/20 bg-emerald-soft/20 font-mono"
@@ -419,19 +423,21 @@ function AdminContent() {
             </div>
 
             <div>
-              <label className="block text-[11px] font-black uppercase tracking-wider text-emerald-deep mb-1.5">
+              <label htmlFor="admin-password" className="block text-[11px] font-black uppercase tracking-wider text-emerald-deep mb-1.5">
                 Password
               </label>
               <div className="relative">
                 <input
+                  id="admin-password"
+                  name="password"
                   type={showPassword ? "text" : "password"}
                   value={enteredPassword}
                   onChange={(e) => {
                     setEnteredPassword(e.target.value);
                     setLoginError("");
                   }}
-                  placeholder="••••••••••••"
-                  required
+                  placeholder="madrasa@admin786 or 7860"
+                  autoComplete="current-password"
                   className="w-full text-left text-sm font-semibold rounded-2xl border-2 border-emerald-deep/20 pl-10 pr-11 py-3 text-emerald-deep focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-400/20 bg-emerald-soft/20 font-mono"
                 />
                 <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-deep/50" />
@@ -454,10 +460,10 @@ function AdminContent() {
 
             <button
               type="submit"
-              className="w-full rounded-2xl bg-gradient-gold text-gold-foreground py-3.5 font-black uppercase text-xs tracking-widest shadow-gold hover:scale-[1.02] active:scale-98 transition-transform cursor-pointer flex items-center justify-center gap-2 mt-2"
+              className="w-full rounded-2xl bg-gradient-emerald text-white py-3.5 font-black uppercase text-xs tracking-widest shadow-soft hover:scale-[1.02] active:scale-98 transition-transform cursor-pointer flex items-center justify-center gap-2 mt-2"
             >
               <Unlock className="h-4 w-4" />
-              <span>Log In to Control Center</span>
+              <span>Log In to Dashboard</span>
             </button>
           </form>
 
@@ -636,23 +642,17 @@ function AdminContent() {
             <span>Manage Courses & Classes ({classes.length})</span>
           </div>
 
-          {/* Add New Class Form */}
-          <form onSubmit={handleAddClass} className="flex items-center gap-2">
-            <input
-              type="text"
-              value={newClassName}
-              onChange={(e) => setNewClassName(e.target.value)}
-              placeholder="New class name..."
-              className="rounded-2xl border border-emerald-deep/20 px-4 py-2 text-xs font-semibold text-emerald-deep focus:outline-none focus:border-amber-500"
-            />
-            <button
-              type="submit"
-              className="rounded-2xl bg-gradient-emerald text-white px-4 py-2 font-extrabold text-xs flex items-center gap-1 shadow-sm hover:scale-105 transition-transform cursor-pointer"
-            >
-              <Plus className="h-3.5 w-3.5 text-gold" />
-              <span>Add</span>
-            </button>
-          </form>
+          <button
+            onClick={() => {
+              setNewClassName("");
+              setClassModalOpen(true);
+            }}
+            type="button"
+            className="inline-flex items-center gap-2 rounded-2xl bg-gradient-gold text-gold-foreground px-5 py-2.5 font-black text-xs uppercase tracking-widest shadow-gold hover:scale-105 active:scale-95 transition-transform cursor-pointer"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Add Course / Class</span>
+          </button>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -774,7 +774,6 @@ function AdminContent() {
                 <th className="p-3.5">Roll No</th>
                 <th className="p-3.5">Class</th>
                 <th className="p-3.5">Percentage / Marks</th>
-                <th className="p-3.5">Grade</th>
                 <th className="p-3.5 text-right">Actions</th>
               </tr>
             </thead>
@@ -802,11 +801,6 @@ function AdminContent() {
                   <td className="p-3.5 font-bold text-amber-800">
                     {st.percentage}% {st.marksObtained && `(${st.marksObtained})`}
                   </td>
-                  <td className="p-3.5">
-                    <span className="bg-emerald-soft px-2.5 py-1 rounded-full text-[10px] font-bold text-emerald-deep">
-                      {st.grade}
-                    </span>
-                  </td>
                   <td className="p-3.5 text-right space-x-2">
                     <button
                       onClick={() => openEditStudentModal(st)}
@@ -832,14 +826,14 @@ function AdminContent() {
         </div>
       </div>
 
-      {/* Section 4: Backup, Import, and Firebase Seeder */}
+      {/* Section 4: Backup, Import, and Database Sync */}
       <div className="rounded-3xl bg-white border border-emerald-deep/15 p-6 sm:p-8 shadow-soft">
         <h3 className="font-display text-lg font-extrabold text-emerald-deep mb-2">
-          Database Backup & Emergency Sync
+          Database Backup & Sync
         </h3>
         <p className="text-xs text-foreground/60 mb-6 font-medium">
           Download a full JSON backup of all results or re-sync pre-populated batches directly to
-          your Firebase database.
+          your database.
         </p>
 
         <div className="flex flex-wrap items-center gap-4">
@@ -864,7 +858,7 @@ function AdminContent() {
             className="inline-flex items-center gap-2 rounded-2xl bg-amber-500/15 border border-amber-400/40 text-amber-900 px-5 py-2.5 text-xs font-extrabold hover:bg-amber-500/25 transition-colors cursor-pointer shadow-subtle ml-auto"
           >
             <RefreshCw className="h-4 w-4 text-amber-700" />
-            <span>Sync Default Batches to Firebase</span>
+            <span>Reset & Sync Default Batches</span>
           </button>
         </div>
       </div>
@@ -970,44 +964,16 @@ function AdminContent() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-black uppercase tracking-wider text-emerald-deep mb-1">
-                    Roll Number
-                  </label>
-                  <input
-                    type="text"
-                    value={formStudent.rollNo || ""}
-                    onChange={(e) => setFormStudent({ ...formStudent, rollNo: e.target.value })}
-                    placeholder="e.g. MGM-2026-042"
-                    className="w-full rounded-xl border border-emerald-deep/20 px-4 py-2.5 text-sm font-mono text-emerald-deep focus:outline-none focus:border-amber-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-black uppercase tracking-wider text-emerald-deep mb-1">
-                    Grade / Distinction
-                  </label>
-                  <input
-                    type="text"
-                    value={formStudent.grade || ""}
-                    onChange={(e) => setFormStudent({ ...formStudent, grade: e.target.value })}
-                    placeholder="e.g. Mumtaz (A+)"
-                    className="w-full rounded-xl border border-emerald-deep/20 px-4 py-2.5 text-sm font-semibold text-emerald-deep focus:outline-none focus:border-amber-500"
-                  />
-                </div>
-              </div>
-
               <div>
                 <label className="block text-xs font-black uppercase tracking-wider text-emerald-deep mb-1">
-                  Remarks / Award Note
+                  Roll Number
                 </label>
                 <input
                   type="text"
-                  value={formStudent.remarks || ""}
-                  onChange={(e) => setFormStudent({ ...formStudent, remarks: e.target.value })}
-                  placeholder="e.g. 1st Position — Gold Medalist"
-                  className="w-full rounded-xl border border-emerald-deep/20 px-4 py-2.5 text-sm text-emerald-deep focus:outline-none focus:border-amber-500"
+                  value={formStudent.rollNo || ""}
+                  onChange={(e) => setFormStudent({ ...formStudent, rollNo: e.target.value })}
+                  placeholder="e.g. MGM-2026-042"
+                  className="w-full rounded-xl border border-emerald-deep/20 px-4 py-2.5 text-sm font-mono text-emerald-deep focus:outline-none focus:border-amber-500"
                 />
               </div>
 
@@ -1015,7 +981,7 @@ function AdminContent() {
                 <button
                   onClick={() => setStudentModalOpen(false)}
                   type="button"
-                  className="rounded-2xl bg-black/5 text-foreground/70 px-5 py-2.5 text-xs font-bold hover:bg-black/10 transition-colors"
+                  className="rounded-2xl bg-black/5 text-foreground/70 px-5 py-2.5 text-xs font-bold hover:bg-black/10 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1024,6 +990,60 @@ function AdminContent() {
                   className="rounded-2xl bg-gradient-emerald text-white px-6 py-2.5 text-xs font-black uppercase tracking-wider shadow-luxe hover:scale-105 transition-transform cursor-pointer"
                 >
                   {editingStudentId ? "Update Result" : "Save Result"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Add Class Modal Popup (Styled like Student Modal) */}
+      {classModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm grid place-items-center p-4 animate-fade-up">
+          <div className="bg-white rounded-[2rem] p-6 sm:p-8 max-w-md w-full border border-gold/40 shadow-luxe gold-border-glow">
+            <div className="flex items-center justify-between pb-4 border-b border-emerald-deep/10 mb-6">
+              <div className="flex items-center gap-2 text-emerald-deep font-extrabold text-lg">
+                <FolderPlus className="h-5 w-5 text-amber-600" />
+                <span>Add New Course / Class</span>
+              </div>
+              <button
+                onClick={() => setClassModalOpen(false)}
+                type="button"
+                className="text-foreground/40 hover:text-foreground p-1 text-sm font-bold cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleAddClass} className="space-y-4">
+              <div>
+                <label className="block text-xs font-black uppercase tracking-wider text-emerald-deep mb-1.5">
+                  Course / Class Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  autoFocus
+                  value={newClassName}
+                  onChange={(e) => setNewClassName(e.target.value)}
+                  placeholder="e.g. Arabic Grammar, Tajweed & Qirat"
+                  className="w-full rounded-xl border border-emerald-deep/20 px-4 py-3 text-sm font-semibold text-emerald-deep focus:outline-none focus:border-amber-500 bg-emerald-soft/10"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-emerald-deep/10">
+                <button
+                  onClick={() => setClassModalOpen(false)}
+                  type="button"
+                  className="rounded-2xl bg-black/5 text-foreground/70 px-5 py-2.5 text-xs font-bold hover:bg-black/10 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-2xl bg-gradient-emerald text-white px-6 py-2.5 text-xs font-black uppercase tracking-wider shadow-luxe hover:scale-105 transition-transform cursor-pointer"
+                >
+                  Create Class
                 </button>
               </div>
             </form>

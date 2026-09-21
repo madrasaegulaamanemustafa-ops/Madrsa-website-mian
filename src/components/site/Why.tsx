@@ -53,14 +53,15 @@ export function Why() {
   const { t, dir } = useLang();
   const [activeCategory, setActiveCategory] = useState<CategoryKey>("safety");
 
-  const whyData = t.why as {
+  const whyData = t.why as unknown as {
     kicker: string;
     title: string;
     subtitle: string;
     categories: Record<CategoryKey, string>;
     items: WhyItem[];
     cta: string;
-    cta_sub: string;
+    slogan?: string;
+    cta_sub?: string;
   };
 
   const categoriesList: { key: CategoryKey; icon: LucideIcon }[] = [
@@ -170,7 +171,7 @@ export function Why() {
             {whyData.cta}
           </h3>
           <p className="text-sm text-foreground/75 mb-6 max-w-md mx-auto font-medium leading-relaxed">
-            {whyData.cta_sub}
+            {whyData.cta_sub || whyData.slogan || ""}
           </p>
           <a
             href={WHATSAPP_URL}

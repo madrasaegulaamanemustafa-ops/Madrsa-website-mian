@@ -114,8 +114,7 @@ function ResultsContent() {
       list = list.filter(
         (s) =>
           s.name.toLowerCase().includes(q) ||
-          s.rollNo.toLowerCase().includes(q) ||
-          (s.grade && s.grade.toLowerCase().includes(q)),
+          s.rollNo.toLowerCase().includes(q),
       );
     }
 
@@ -378,16 +377,13 @@ function ResultsContent() {
                               </div>
 
                               <div className="flex items-center gap-4 self-end sm:self-auto">
-                                <div className="text-right">
-                                  {settings.showPercentages && (
+                                {settings.showPercentages && (
+                                  <div className="text-right">
                                     <div className="font-display font-extrabold text-lg text-emerald-deep">
                                       {st.percentage}%
                                     </div>
-                                  )}
-                                  <div className="text-[11px] font-bold text-amber-700">
-                                    {st.grade}
                                   </div>
-                                </div>
+                                )}
 
                                 <button
                                   onClick={() => handleShareResult(st)}
@@ -523,7 +519,7 @@ function PodiumCard({
         )}
 
         <div className="inline-block px-3 py-1 rounded-full bg-emerald-soft text-[11px] font-bold text-emerald-deep">
-          {student.grade || rankTitles[rank as 1 | 2 | 3]}
+          {rankTitles[rank as 1 | 2 | 3]}
         </div>
       </div>
 

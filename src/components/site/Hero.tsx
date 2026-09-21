@@ -28,6 +28,7 @@ export function Hero() {
           loop
           muted
           playsInline
+          preload="metadata"
           poster={madinahBg}
           className="w-full h-full object-cover object-[center_35%] opacity-85"
         >
@@ -154,6 +155,8 @@ export function Hero() {
               <img
                 src={heroImg}
                 alt="Madrasa E Gulaaman E Mustafa Live Online Education"
+                decoding="async"
+                fetchPriority="high"
                 className="w-full h-[500px] object-cover opacity-95 hover:scale-105 transition-transform duration-700"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
