@@ -5,6 +5,10 @@ import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
   plugins: [react(), tailwindcss(), tsConfigPaths({ projects: ["./tsconfig.json"] })],
+  server: {
+    host: true,
+    port: 5174,
+  },
   resolve: {
     alias: {
       "@": "/src",
