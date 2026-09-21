@@ -36,13 +36,15 @@ CREATE TABLE IF NOT EXISTS madrasa.students (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 4. Results Settings Table (Global Config & Admin Pin)
+-- 4. Results Settings Table (Global Config & Admin Authentication)
 CREATE TABLE IF NOT EXISTS madrasa.settings (
     id TEXT PRIMARY KEY DEFAULT 'results_config',
     display_limit INTEGER NOT NULL DEFAULT 5,
     active_exam_title TEXT NOT NULL DEFAULT 'Monthly Fatah-E-Battle & Exam Results',
     session_year TEXT NOT NULL DEFAULT '2026–27',
     admin_pin TEXT NOT NULL DEFAULT '7860',
+    admin_email TEXT NOT NULL DEFAULT 'admin@madrasa.com',
+    admin_password TEXT NOT NULL DEFAULT 'madrasa@admin786',
     show_roll_numbers BOOLEAN NOT NULL DEFAULT TRUE,
     show_percentages BOOLEAN NOT NULL DEFAULT TRUE,
     banner_notice TEXT NOT NULL DEFAULT 'Mubarakbaad to all successful students and their proud parents. May Allah ﷻ grant steadfastness in Deeni knowledge.',
@@ -65,18 +67,22 @@ CREATE POLICY "Allow all actions for students" ON madrasa.students FOR ALL USING
 CREATE POLICY "Allow all actions for settings" ON madrasa.settings FOR ALL USING (true) WITH CHECK (true);
 
 -- 6. Initial Seed Data
-INSERT INTO madrasa.settings (id, display_limit, active_exam_title, session_year, admin_pin, show_roll_numbers, show_percentages, banner_notice)
+INSERT INTO madrasa.settings (id, display_limit, active_exam_title, session_year, admin_pin, admin_email, admin_password, show_roll_numbers, show_percentages, banner_notice)
 VALUES (
     'results_config',
     5,
     'Monthly Fatah-E-Battle & Exam Results',
     '2026–27',
     '7860',
+    'admin@madrasa.com',
+    'madrasa@admin786',
     TRUE,
     TRUE,
     'Mubarakbaad to all successful students and their proud parents. May Allah ﷻ grant steadfastness in Deeni knowledge.'
 )
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE SET
+    admin_email = EXCLUDED.admin_email,
+    admin_password = EXCLUDED.admin_password;
 
 -- Seed Classes
 INSERT INTO madrasa.classes (id, name, order_num) VALUES

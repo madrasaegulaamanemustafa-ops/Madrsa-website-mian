@@ -27,7 +27,9 @@ export interface ResultsSettings {
   displayLimit: number; // e.g. 5 for top 5, or 3, 10, 0 for all
   activeExamTitle: string;
   sessionYear: string;
-  adminPin: string;
+  adminPin?: string;
+  adminEmail: string;
+  adminPassword: string;
   showRollNumbers: boolean;
   showPercentages: boolean;
   bannerNotice: string;
@@ -38,6 +40,8 @@ export const DEFAULT_SETTINGS: ResultsSettings = {
   activeExamTitle: "Monthly Fatah-E-Battle & Exam Results",
   sessionYear: "2026–27",
   adminPin: "7860",
+  adminEmail: "admin@madrasa.com",
+  adminPassword: "madrasa@admin786",
   showRollNumbers: true,
   showPercentages: true,
   bannerNotice:
@@ -357,6 +361,8 @@ export async function getResultsSettings(): Promise<ResultsSettings> {
             activeExamTitle: data.active_exam_title || DEFAULT_SETTINGS.activeExamTitle,
             sessionYear: data.session_year || DEFAULT_SETTINGS.sessionYear,
             adminPin: data.admin_pin || DEFAULT_SETTINGS.adminPin,
+            adminEmail: data.admin_email || DEFAULT_SETTINGS.adminEmail,
+            adminPassword: data.admin_password || DEFAULT_SETTINGS.adminPassword,
             showRollNumbers: data.show_roll_numbers ?? true,
             showPercentages: data.show_percentages ?? true,
             bannerNotice: data.banner_notice || DEFAULT_SETTINGS.bannerNotice,
@@ -380,7 +386,9 @@ export async function saveResultsSettings(settings: ResultsSettings): Promise<vo
       display_limit: settings.displayLimit,
       active_exam_title: settings.activeExamTitle,
       session_year: settings.sessionYear,
-      admin_pin: settings.adminPin,
+      admin_pin: settings.adminPin || "7860",
+      admin_email: settings.adminEmail,
+      admin_password: settings.adminPassword,
       show_roll_numbers: settings.showRollNumbers,
       show_percentages: settings.showPercentages,
       banner_notice: settings.bannerNotice,

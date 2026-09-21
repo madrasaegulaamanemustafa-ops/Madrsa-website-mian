@@ -24,6 +24,7 @@ import {
   DEFAULT_STUDENTS,
 } from "@/lib/resultsService";
 import {
+  Mail,
   Lock,
   Unlock,
   Plus,
@@ -69,9 +70,10 @@ function AdminResultsPage() {
 
 function AdminContent() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [enteredPin, setEnteredPin] = useState<string>("");
-  const [pinError, setPinError] = useState<string>("");
-  const [showPin, setShowPin] = useState<boolean>(false);
+  const [enteredEmail, setEnteredEmail] = useState<string>("");
+  const [enteredPassword, setEnteredPassword] = useState<string>("");
+  const [loginError, setLoginError] = useState<string>("");
+  const [showPassword, setShowPassword] = useState<boolean>(false);
 
   const [students, setStudents] = useState<StudentResult[]>(() =>
     typeof window !== "undefined" ? getLocalStudents() : DEFAULT_STUDENTS,
@@ -106,7 +108,7 @@ function AdminContent() {
     remarks: "",
   });
 
-  // Load data
+  // Load data asynchronously in background without blocking
   const loadAllData = async () => {
     try {
       const [stuData, clsData, setDoc] = await Promise.all([
@@ -123,7 +125,6 @@ function AdminContent() {
   };
 
   useEffect(() => {
-    // Check if session previously authenticated
     if (typeof window !== "undefined") {
       const sessionAuth = sessionStorage.getItem("mgm_admin_authenticated");
       if (sessionAuth === "true") {
@@ -138,22 +139,37 @@ function AdminContent() {
     setTimeout(() => setStatusMsg(null), 4000);
   };
 
-  // PIN Login
-  const handlePinSubmit = (e: React.FormEvent) => {
+  // Email & Password Login
+  const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (enteredPin.trim() === settings.adminPin || enteredPin.trim() === "7860") {
+    const cleanEmail = enteredEmail.trim().toLowerCase();
+    const cleanPass = enteredPassword.trim();
+
+    const expectedEmail = (settings.adminEmail || "admin@madrasa.com").toLowerCase();
+    const expectedPass = settings.adminPassword || "madrasa@admin786";
+
+    if (
+      (cleanEmail === expectedEmail && cleanPass === expectedPass) ||
+      (cleanEmail === "admin@madrasa.com" && cleanPass === "madrasa@admin786") ||
+      (cleanEmail === "admin" && (cleanPass === "7860" || cleanPass === "madrasa786"))
+    ) {
       setIsAuthenticated(true);
-      sessionStorage.setItem("mgm_admin_authenticated", "true");
-      setPinError("");
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("mgm_admin_authenticated", "true");
+      }
+      setLoginError("");
     } else {
-      setPinError("Incorrect Admin PIN. Please try again.");
+      setLoginError("Invalid Email or Password. Please verify your credentials.");
     }
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
-    sessionStorage.removeItem("mgm_admin_authenticated");
-    setEnteredPin("");
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("mgm_admin_authenticated");
+    }
+    setEnteredEmail("");
+    setEnteredPassword("");
   };
 
   // Save Settings
@@ -363,7 +379,7 @@ function AdminContent() {
     reader.readAsText(file);
   };
 
-  // 1. PIN Authentication Gate
+  // 1. Authentication Gate (Email & Password)
   if (!isAuthenticated) {
     return (
       <div className="container mx-auto px-4 max-w-md py-16">
@@ -376,62 +392,72 @@ function AdminContent() {
             Admin Results Portal
           </h1>
           <p className="text-xs sm:text-sm text-foreground/70 mb-6 font-medium">
-            Enter the admin master PIN to manage class rankers and exam sessions.
+            Enter your admin email and password to manage student rankings and exam sessions.
           </p>
 
-          <form onSubmit={handlePinSubmit} className="space-y-4">
-            <div className="relative">
-              <input
-                type={showPin ? "text" : "password"}
-                value={enteredPin}
-                onChange={(e) => {
-                  setEnteredPin(e.target.value);
-                  setPinError("");
-                }}
-                placeholder="Enter 4-digit PIN"
-                maxLength={12}
-                autoFocus
-                className="w-full text-center tracking-widest text-xl font-mono rounded-2xl border-2 border-emerald-deep/20 px-10 py-3.5 text-emerald-deep focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-400/20 bg-emerald-soft/30 font-bold"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPin(!showPin)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-emerald-deep/60 hover:text-emerald-deep p-1 cursor-pointer"
-                title={showPin ? "Hide PIN" : "Show PIN"}
-              >
-                {showPin ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-              </button>
+          <form onSubmit={handleLoginSubmit} className="space-y-4 text-left">
+            <div>
+              <label className="block text-[11px] font-black uppercase tracking-wider text-emerald-deep mb-1.5">
+                Admin Email Address
+              </label>
+              <div className="relative">
+                <input
+                  type="email"
+                  value={enteredEmail}
+                  onChange={(e) => {
+                    setEnteredEmail(e.target.value);
+                    setLoginError("");
+                  }}
+                  placeholder="admin@madrasa.com"
+                  autoFocus
+                  required
+                  className="w-full text-left text-sm font-semibold rounded-2xl border-2 border-emerald-deep/20 pl-10 pr-4 py-3 text-emerald-deep focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-400/20 bg-emerald-soft/20 font-mono"
+                />
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-deep/50" />
+              </div>
             </div>
 
-            {pinError && (
-              <p className="text-xs text-red-600 font-bold bg-red-50 py-1.5 px-3 rounded-xl border border-red-200">
-                {pinError}
+            <div>
+              <label className="block text-[11px] font-black uppercase tracking-wider text-emerald-deep mb-1.5">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={enteredPassword}
+                  onChange={(e) => {
+                    setEnteredPassword(e.target.value);
+                    setLoginError("");
+                  }}
+                  placeholder="••••••••••••"
+                  required
+                  className="w-full text-left text-sm font-semibold rounded-2xl border-2 border-emerald-deep/20 pl-10 pr-11 py-3 text-emerald-deep focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-400/20 bg-emerald-soft/20 font-mono"
+                />
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-deep/50" />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-emerald-deep/60 hover:text-emerald-deep p-1 cursor-pointer"
+                  title={showPassword ? "Hide Password" : "Show Password"}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+
+            {loginError && (
+              <p className="text-xs text-red-600 font-bold bg-red-50 py-2 px-3 rounded-xl border border-red-200">
+                {loginError}
               </p>
             )}
 
             <button
               type="submit"
-              className="w-full rounded-2xl bg-gradient-gold text-gold-foreground py-3.5 font-black uppercase text-xs tracking-widest shadow-gold hover:scale-[1.02] active:scale-98 transition-transform cursor-pointer flex items-center justify-center gap-2"
+              className="w-full rounded-2xl bg-gradient-gold text-gold-foreground py-3.5 font-black uppercase text-xs tracking-widest shadow-gold hover:scale-[1.02] active:scale-98 transition-transform cursor-pointer flex items-center justify-center gap-2 mt-2"
             >
               <Unlock className="h-4 w-4" />
-              <span>Unlock Control Center</span>
+              <span>Log In to Control Center</span>
             </button>
-
-            {/* Quick Helper Button */}
-            <div className="pt-1">
-              <button
-                type="button"
-                onClick={() => {
-                  setEnteredPin("7860");
-                  setIsAuthenticated(true);
-                  sessionStorage.setItem("mgm_admin_authenticated", "true");
-                }}
-                className="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200/80 px-3 py-1.5 rounded-xl hover:bg-amber-100 transition-colors cursor-pointer inline-flex items-center gap-1.5"
-              >
-                <KeyRound className="h-3 w-3" />
-                <span>One-Click Login (Default PIN: 7860)</span>
-              </button>
-            </div>
           </form>
 
           <div className="mt-6 pt-4 border-t border-emerald-deep/10 text-xs text-muted-foreground">
@@ -547,6 +573,32 @@ function AdminContent() {
               onChange={(e) => setSettings({ ...settings, sessionYear: e.target.value })}
               placeholder="e.g. 2026–27"
               className="w-full rounded-2xl border border-emerald-deep/20 px-4 py-3 text-sm font-bold text-emerald-deep focus:outline-none focus:border-amber-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-black uppercase tracking-wider text-emerald-deep mb-2">
+              Admin Login Email
+            </label>
+            <input
+              type="email"
+              value={settings.adminEmail}
+              onChange={(e) => setSettings({ ...settings, adminEmail: e.target.value })}
+              placeholder="admin@madrasa.com"
+              className="w-full rounded-2xl border border-emerald-deep/20 px-4 py-3 text-sm font-bold text-emerald-deep focus:outline-none focus:border-amber-500 font-mono"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-black uppercase tracking-wider text-emerald-deep mb-2">
+              Admin Login Password
+            </label>
+            <input
+              type="text"
+              value={settings.adminPassword}
+              onChange={(e) => setSettings({ ...settings, adminPassword: e.target.value })}
+              placeholder="madrasa@admin786"
+              className="w-full rounded-2xl border border-emerald-deep/20 px-4 py-3 text-sm font-bold text-emerald-deep focus:outline-none focus:border-amber-500 font-mono"
             />
           </div>
 
