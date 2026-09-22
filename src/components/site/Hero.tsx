@@ -1,6 +1,6 @@
 import { useLang, WHATSAPP_URL } from "@/i18n/LangContext";
-import madinahBg from "@/assets/madinah-hero-bg.jpg";
-import heroImg from "@/assets/hero-mosque.jpg";
+import madinahBg from "@/assets/madinah-hero-bg.webp";
+import heroImg from "@/assets/hero-mosque.webp";
 import {
   Check,
   MessageCircle,

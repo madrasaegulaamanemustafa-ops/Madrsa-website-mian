@@ -40,6 +40,7 @@
   --font-display: "Cormorant Garamond", "Playfair Display", Georgia, serif;
   --font-body: "Inter", "Cairo", system-ui, sans-serif;
   --font-arabic: "Amiri", "Scheherazade New", "Noto Naskh Arabic", serif;
+  --font-urdu: "Noto Nastaliq Urdu", "Amiri", "Noto Naskh Arabic", serif;
 }
 
 :root {
@@ -134,14 +135,30 @@
     font-family: var(--font-display);
     letter-spacing: -0.02em;
   }
-  [dir="rtl"] {
-    font-family: var(--font-arabic);
+  [dir="rtl"],
+  [lang="ur"] {
+    font-family: var(--font-urdu);
+    letter-spacing: 0;
   }
   [dir="rtl"] h1,
   [dir="rtl"] h2,
   [dir="rtl"] h3,
-  [dir="rtl"] h4 {
+  [dir="rtl"] h4,
+  [lang="ur"] h1,
+  [lang="ur"] h2,
+  [lang="ur"] h3,
+  [lang="ur"] h4 {
+    font-family: var(--font-urdu);
+    letter-spacing: 0;
+  }
+  .font-arabic,
+  [lang="ar"] {
     font-family: var(--font-arabic);
+    letter-spacing: normal;
+  }
+  .font-urdu {
+    font-family: var(--font-urdu);
+    letter-spacing: normal;
   }
 }
 

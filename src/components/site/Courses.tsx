@@ -180,7 +180,7 @@ export function Courses() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
           {filteredCourses.map((c) => {
             const timing = getBatchTiming(c.originalIndex);
-            const courseWhatsAppUrl = `https://wa.me/6393741504?text=${encodeURIComponent(
+            const courseWhatsAppUrl = `https://wa.me/916393741504?text=${encodeURIComponent(
               `Assalamu Alaikum! I want to enroll in the "${c.name}" course at Madrasa E Gulaaman E Mustafa ﷺ.`,
             )}`;
 
@@ -273,7 +273,7 @@ export function Courses() {
             </div>
           </div>
           <a
-            href="https://wa.me/6393741504?text=Assalamu%20Alaikum!%20I%20want%20to%20ask%20about%20joining%20multiple%20courses%20for%20Rs%20300."
+            href="https://wa.me/916393741504?text=Assalamu%20Alaikum!%20I%20want%20to%20ask%20about%20joining%20multiple%20courses%20for%20Rs%20300."
             target="_blank"
             rel="noopener noreferrer"
             className="px-5 py-2.5 rounded-xl bg-emerald-deep text-white text-xs font-bold hover:bg-emerald-900 transition-colors shrink-0 shadow-sm focus-visible:ring-2 focus-visible:ring-amber-500"

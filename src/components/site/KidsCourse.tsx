@@ -1,11 +1,11 @@
 import { useLang } from "@/i18n/LangContext";
 import { Baby, Star, MessageCircle, Sparkles, Trophy, Palette, CheckCircle } from "lucide-react";
-import kidsPoster from "@/assets/poster-kids-special.jpg";
+import kidsPoster from "@/assets/poster-kids-special.webp";
 
 export function KidsCourse() {
   const { t } = useLang();
 
-  const kidsWhatsAppUrl = `https://wa.me/6393741504?text=${encodeURIComponent(
+  const kidsWhatsAppUrl = `https://wa.me/916393741504?text=${encodeURIComponent(
     "Assalamu Alaikum! I want to enroll my child (age 5-13) in the Online Kids Special Course at Madrasa E Gulaaman E Mustafa ﷺ.",
   )}`;
 

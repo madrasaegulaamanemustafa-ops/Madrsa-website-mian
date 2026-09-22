@@ -1,0 +1,8 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /admin/results
+
+# Sitemaps
+Sitemap: https://madrasaegulaamanemustafa.com/sitemap.xml

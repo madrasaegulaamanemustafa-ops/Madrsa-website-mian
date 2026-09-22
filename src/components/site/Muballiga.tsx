@@ -4,7 +4,7 @@ import { Heart, Check, MessageCircle, ShieldCheck, Lock, Sparkles, UserCheck } f
 export function Muballiga() {
   const { t } = useLang();
 
-  const sisterWhatsAppUrl = `https://wa.me/6393741504?text=${encodeURIComponent(
+  const sisterWhatsAppUrl = `https://wa.me/916393741504?text=${encodeURIComponent(
     "Assalamu Alaikum! I am a sister inquiring about the Muballiga / Aalima Course for females at Madrasa E Gulaaman E Mustafa ﷺ.",
   )}`;
 

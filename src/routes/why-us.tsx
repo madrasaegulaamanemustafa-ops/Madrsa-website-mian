@@ -29,23 +29,23 @@ function WhyUs() {
   );
 }
 
-// Custom media mapping for all 15 features
+// Custom media mapping for all 15 features (optimized WebP images & video streaming)
 const featureMediaMap: Record<number, { type: "image" | "video"; src: string }> = {
   1: { type: "video", src: "/images/why-us/live_class.mp4" },
   2: { type: "video", src: "/images/why-us/class_recording.mp4" },
-  3: { type: "image", src: "/images/why-us/notes.jpg" },
-  4: { type: "image", src: "/images/why-us/weekly-tests.jpg" },
-  5: { type: "image", src: "/images/why-us/15-day-exams.jpg" },
+  3: { type: "image", src: "/images/why-us/notes.webp" },
+  4: { type: "image", src: "/images/why-us/weekly-tests.webp" },
+  5: { type: "image", src: "/images/why-us/15-day-exams.webp" },
   6: { type: "video", src: "/images/why-us/ai_teacher.mp4" },
-  7: { type: "image", src: "/images/why-us/zayrik_live_class.jpeg" },
+  7: { type: "image", src: "/images/why-us/zayrik_live_class.webp" },
   8: { type: "video", src: "/images/why-us/ai_sunni_teacher.mp4" },
-  9: { type: "image", src: "/images/why-us/Ai_den_teacher.jpeg" },
-  10: { type: "image", src: "/images/why-us/Game_based_learning.jpeg" },
-  11: { type: "image", src: "/images/why-us/Monthly_Fatah-E-Battle.PNG" },
-  12: { type: "image", src: "/images/why-us/Student_Progress_Tracking.jpeg" },
-  13: { type: "image", src: "/images/why-us/certificate.jpeg" },
-  14: { type: "image", src: "/images/why-us/it_support.jpeg" },
-  15: { type: "image", src: "/images/why-us/chat.png" },
+  9: { type: "image", src: "/images/why-us/Ai_den_teacher.webp" },
+  10: { type: "image", src: "/images/why-us/Game_based_learning.webp" },
+  11: { type: "image", src: "/images/why-us/Monthly_Fatah-E-Battle.webp" },
+  12: { type: "image", src: "/images/why-us/Student_Progress_Tracking.webp" },
+  13: { type: "image", src: "/images/why-us/certificate.webp" },
+  14: { type: "image", src: "/images/why-us/it_support.webp" },
+  15: { type: "image", src: "/images/why-us/chat.webp" },
 };
 
 function WhyUsContent() {
@@ -208,6 +208,8 @@ function WhyUsContent() {
                 <img
                   src={currentMedia.src}
                   alt={currentItem.title}
+                  loading="lazy"
+                  decoding="async"
                   className="max-h-[72vh] sm:max-h-[76vh] max-w-full object-contain rounded-2xl shadow-2xl border border-gold/30 ring-1 ring-white/10"
                 />
               ) : currentMedia?.type === "video" ? (
@@ -218,7 +220,7 @@ function WhyUsContent() {
                     controls
                     autoPlay
                     playsInline
-                    preload="auto"
+                    preload="metadata"
                     className="max-h-[72vh] sm:max-h-[76vh] w-full rounded-2xl shadow-2xl border border-gold/30 bg-black"
                   >
                     <source src={currentMedia.src} type="video/mp4" />

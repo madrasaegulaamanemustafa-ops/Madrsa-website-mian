@@ -1,19 +1,19 @@
 import { useState, useEffect, useCallback } from "react";
 import { useLang, WHATSAPP_URL } from "@/i18n/LangContext";
 import { ImageIcon, MessageCircle, Maximize2, X, ChevronLeft, ChevronRight } from "lucide-react";
-import offer from "@/assets/poster-offer.png";
-import muballiga from "@/assets/poster-muballiga.png";
-import kids from "@/assets/poster-kids.png";
-import kidsSpecial from "@/assets/poster-kids-special.jpg";
-import hajj from "@/assets/poster-hajj.png";
-import dars from "@/assets/poster-darsenizami.png";
-import muftiya from "@/assets/poster-muftiya.png";
-import urdu from "@/assets/poster-urdu.png";
+import offer from "@/assets/poster-offer.webp";
+import muballiga from "@/assets/poster-muballiga.webp";
+import kids from "@/assets/poster-kids.webp";
+import kidsSpecial from "@/assets/poster-kids-special.webp";
+import hajj from "@/assets/poster-hajj.webp";
+import dars from "@/assets/poster-darsenizami.webp";
+import muftiya from "@/assets/poster-muftiya.webp";
+import urdu from "@/assets/poster-urdu.webp";
 
-import darsEnglish from "@/assets/poster-dars-english.jpg";
-import allCourses from "@/assets/poster-all-courses.jpg";
-import dars300 from "@/assets/poster-dars-300.jpg";
-import nazra from "@/assets/poster-nazra.jpg";
+import darsEnglish from "@/assets/poster-dars-english.webp";
+import allCourses from "@/assets/poster-all-courses.webp";
+import dars300 from "@/assets/poster-dars-300.webp";
+import nazra from "@/assets/poster-nazra.webp";
 
 const posters = [
   { src: offer, label: "₹300 Big Offer — All 9 Courses" },
@@ -208,7 +208,7 @@ export function Posters() {
                   Flyer {activeModalIndex + 1} of {posters.length}
                 </span>
                 <a
-                  href={`https://wa.me/6393741504?text=${encodeURIComponent(
+                  href={`https://wa.me/916393741504?text=${encodeURIComponent(
                     `Assalamu Alaikum! I am inquiring about the "${currentPoster.label}" flyer details.`,
                   )}`}
                   target="_blank"

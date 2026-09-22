@@ -254,8 +254,8 @@ function AdminContent() {
       rank: 1,
       percentage: 95.0,
       marksObtained: "475/500",
-      grade: "",
-      remarks: "",
+      grade: "Mumtaz (A+)",
+      remarks: "Position Distinction",
       term: settings.activeExamTitle,
     });
     setStudentModalOpen(true);
@@ -263,7 +263,7 @@ function AdminContent() {
 
   const openEditStudentModal = (student: StudentResult) => {
     setEditingStudentId(student.id);
-    setFormStudent(student);
+    setFormStudent({ ...student });
     setStudentModalOpen(true);
   };
 
@@ -286,8 +286,8 @@ function AdminContent() {
       rank: Number(formStudent.rank) || 1,
       percentage: Number(formStudent.percentage) || 0,
       marksObtained: formStudent.marksObtained?.trim() || "",
-      grade: "",
-      remarks: "",
+      grade: formStudent.grade?.trim() || "Mumtaz (A+)",
+      remarks: formStudent.remarks?.trim() || "",
       term: formStudent.term?.trim() || settings.activeExamTitle,
     };
 
@@ -972,16 +972,44 @@ function AdminContent() {
                 </div>
               </div>
 
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-emerald-deep mb-1">
+                    Roll Number
+                  </label>
+                  <input
+                    type="text"
+                    value={formStudent.rollNo || ""}
+                    onChange={(e) => setFormStudent({ ...formStudent, rollNo: e.target.value })}
+                    placeholder="e.g. MGM-2026-042"
+                    className="w-full rounded-xl border border-emerald-deep/20 px-4 py-2.5 text-sm font-mono text-emerald-deep focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-emerald-deep mb-1">
+                    Grade / Award
+                  </label>
+                  <input
+                    type="text"
+                    value={formStudent.grade || ""}
+                    onChange={(e) => setFormStudent({ ...formStudent, grade: e.target.value })}
+                    placeholder="e.g. Mumtaz (A+)"
+                    className="w-full rounded-xl border border-emerald-deep/20 px-4 py-2.5 text-sm font-semibold text-emerald-deep focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+              </div>
+
               <div>
                 <label className="block text-xs font-black uppercase tracking-wider text-emerald-deep mb-1">
-                  Roll Number
+                  Remarks / Special Distinction
                 </label>
                 <input
                   type="text"
-                  value={formStudent.rollNo || ""}
-                  onChange={(e) => setFormStudent({ ...formStudent, rollNo: e.target.value })}
-                  placeholder="e.g. MGM-2026-042"
-                  className="w-full rounded-xl border border-emerald-deep/20 px-4 py-2.5 text-sm font-mono text-emerald-deep focus:outline-none focus:border-amber-500"
+                  value={formStudent.remarks || ""}
+                  onChange={(e) => setFormStudent({ ...formStudent, remarks: e.target.value })}
+                  placeholder="e.g. 1st Position — Gold Medalist"
+                  className="w-full rounded-xl border border-emerald-deep/20 px-4 py-2.5 text-sm font-semibold text-emerald-deep focus:outline-none focus:border-amber-500"
                 />
               </div>
 

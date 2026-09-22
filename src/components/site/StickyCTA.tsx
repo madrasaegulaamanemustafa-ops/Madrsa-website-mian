@@ -50,7 +50,7 @@ export function StickyCTA() {
             <div className="space-y-2">
               {quickLinks.map((item, idx) => {
                 const Icon = item.icon;
-                const linkUrl = `https://wa.me/6393741504?text=${encodeURIComponent(item.text)}`;
+                const linkUrl = `https://wa.me/916393741504?text=${encodeURIComponent(item.text)}`;
                 return (
                   <a
                     key={idx}

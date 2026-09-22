@@ -1,5 +1,5 @@
 import { useLang, WHATSAPP_URL } from "@/i18n/LangContext";
-import makkahBg from "@/assets/makkah-holy-bg.jpg";
+import makkahBg from "@/assets/makkah-holy-bg.webp";
 import { Crown, Flame, CheckCircle2, MessageCircle, Sparkles, HeartHandshake } from "lucide-react";
 
 export function Offer() {
