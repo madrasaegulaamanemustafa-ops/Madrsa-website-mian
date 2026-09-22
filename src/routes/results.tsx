@@ -350,7 +350,7 @@ function ResultsContent() {
                       <div className="rounded-3xl bg-white border border-emerald-deep/10 shadow-soft overflow-hidden">
                         <div className="px-6 py-3.5 bg-emerald-soft/60 border-b border-emerald-deep/10 text-xs font-black text-emerald-deep uppercase tracking-wider flex items-center justify-between">
                           <span>Honorable Mention Rankers</span>
-                          <span>Score & Grade</span>
+                          <span>Marks & Percentage</span>
                         </div>
                         <div className="divide-y divide-emerald-deep/10">
                           {remaining.map((st) => (

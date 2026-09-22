@@ -1,8 +1,5 @@
 import { useState, useEffect } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { LangProvider } from "@/i18n/LangContext";
-import { Navbar } from "@/components/site/Navbar";
-import { Footer } from "@/components/site/Footer";
 import {
   getStudents,
   getClasses,
@@ -32,7 +29,6 @@ import {
   Edit2,
   Save,
   RefreshCw,
-  Trophy,
   Sliders,
   FolderPlus,
   CheckCircle2,
@@ -41,8 +37,6 @@ import {
   Upload,
   Eye,
   EyeOff,
-  KeyRound,
-  AlertCircle,
 } from "lucide-react";
 
 export const Route = createFileRoute("/admin/results")({
@@ -110,8 +104,6 @@ function AdminContent() {
     rank: 1,
     percentage: 95,
     marksObtained: "",
-    grade: "",
-    remarks: "",
   });
 
   // Fast background data synchronizer (only called after authentication)
@@ -181,7 +173,8 @@ function AdminContent() {
     try {
       await saveResultsSettings(settings);
       showStatus("success", "Display settings successfully saved!");
-    } catch {
+    } catch (error) {
+      console.error("Failed to save settings:", error);
       showStatus("error", "Failed to save settings.");
     }
   };
@@ -200,15 +193,15 @@ function AdminContent() {
       order: classes.length + 1,
     };
 
-    setClasses((prev) => [...prev, newCls]);
-    setNewClassName("");
-    setClassModalOpen(false);
-    showStatus("success", `Class "${newCls.name}" added successfully!`);
-
     try {
       await saveClass(newCls);
-    } catch {
-      console.warn("Class saved to local storage.");
+      setClasses((prev) => [...prev, newCls]);
+      setNewClassName("");
+      setClassModalOpen(false);
+      showStatus("success", `Class "${newCls.name}" added successfully!`);
+    } catch (error) {
+      console.error("Failed to add class:", error);
+      showStatus("error", "Failed to add class.");
     }
   };
 
@@ -216,31 +209,43 @@ function AdminContent() {
     if (!confirm(`Are you sure you want to delete the class "${name}" and all its student ranks?`))
       return;
 
-    setClasses((prev) => prev.filter((c) => c.id !== classId));
-    setStudents((prev) => prev.filter((s) => s.classId !== classId));
-    showStatus("success", `Class "${name}" deleted.`);
-
     try {
+      const studentsToDelete = students.filter((s) => s.classId === classId);
       await deleteClass(classId);
-    } catch {
-      console.warn("Class deleted from local storage.");
+      await Promise.all(studentsToDelete.map((s) => deleteStudent(s.id)));
+      setClasses((prev) => prev.filter((c) => c.id !== classId));
+      setStudents((prev) => prev.filter((s) => s.classId !== classId));
+      showStatus("success", `Class "${name}" and associated students deleted.`);
+    } catch (error) {
+      console.error("Failed to delete class and students:", error);
+      showStatus("error", "Failed to delete class and associated students.");
     }
   };
 
   const handleUpdateClassName = async (classId: string) => {
-    if (!editingClassName.trim()) return;
+    const newName = editingClassName.trim();
+    if (!newName) return;
     const cls = classes.find((c) => c.id === classId);
     if (!cls) return;
 
-    const updatedCls: ClassCategory = { ...cls, name: editingClassName.trim() };
-    setClasses((prev) => prev.map((c) => (c.id === classId ? updatedCls : c)));
-    setEditingClassId(null);
-    showStatus("success", "Class renamed.");
+    const updatedCls: ClassCategory = { ...cls, name: newName };
+    const updatedStudents = students.map((s) =>
+      s.classId === classId ? { ...s, className: newName } : s,
+    );
 
     try {
       await saveClass(updatedCls);
-    } catch {
-      console.warn("Class updated in local storage.");
+      const affectedStudents = students.filter((s) => s.classId === classId);
+      await Promise.all(
+        affectedStudents.map((s) => saveStudent({ ...s, className: newName })),
+      );
+      setClasses((prev) => prev.map((c) => (c.id === classId ? updatedCls : c)));
+      setStudents(updatedStudents);
+      setEditingClassId(null);
+      showStatus("success", `Class renamed to "${newName}" and students updated.`);
+    } catch (error) {
+      console.error("Failed to rename class:", error);
+      showStatus("error", "Failed to update class name.");
     }
   };
 
@@ -253,9 +258,7 @@ function AdminContent() {
       classId: defaultClassId || classes[0]?.id || "",
       rank: 1,
       percentage: 95.0,
-      marksObtained: "475/500",
-      grade: "Mumtaz (A+)",
-      remarks: "Position Distinction",
+      marksObtained: "",
       term: settings.activeExamTitle,
     });
     setStudentModalOpen(true);
@@ -269,7 +272,7 @@ function AdminContent() {
 
   const handleSaveStudent = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formStudent.name || !formStudent.classId) {
+    if (!formStudent.name?.trim() || !formStudent.classId) {
       alert("Student name and class are required.");
       return;
     }
@@ -277,50 +280,30 @@ function AdminContent() {
     const selectedClass = classes.find((c) => c.id === formStudent.classId);
     const id = editingStudentId || `stu-${Date.now()}`;
 
-    const pct = Number(formStudent.percentage) || 0;
-    const rk = Number(formStudent.rank) || 1;
-    const autoGrade =
-      pct >= 90
-        ? "Mumtaz (A+)"
-        : pct >= 80
-          ? "Jayyid Jiddan (A)"
-          : pct >= 65
-            ? "Jayyid (B)"
-            : "Maqbool (C)";
-    const autoRemarks =
-      rk === 1
-        ? "1st Position — Gold Medalist"
-        : rk === 2
-          ? "2nd Position — Silver Medalist"
-          : rk === 3
-            ? "3rd Position — Bronze Medalist"
-            : `${rk}th Position Distinction`;
-
     const studentRecord: StudentResult = {
       id,
       name: formStudent.name.trim(),
       rollNo: formStudent.rollNo?.trim() || "",
       classId: formStudent.classId,
-      className: selectedClass?.name || "Islamic Studies",
-      rank: rk,
-      percentage: pct,
+      className: selectedClass?.name || "",
+      rank: Number(formStudent.rank) || 1,
+      percentage: Number(formStudent.percentage) || 0,
       marksObtained: formStudent.marksObtained?.trim() || "",
-      grade: formStudent.grade || autoGrade,
-      remarks: formStudent.remarks || autoRemarks,
       term: formStudent.term?.trim() || settings.activeExamTitle,
     };
 
     try {
       await saveStudent(studentRecord);
       if (editingStudentId) {
-        setStudents(students.map((s) => (s.id === id ? studentRecord : s)));
+        setStudents((prev) => prev.map((s) => (s.id === id ? studentRecord : s)));
         showStatus("success", `Updated student "${studentRecord.name}".`);
       } else {
-        setStudents([...students, studentRecord]);
+        setStudents((prev) => [...prev, studentRecord]);
         showStatus("success", `Added student "${studentRecord.name}".`);
       }
       setStudentModalOpen(false);
-    } catch {
+    } catch (error) {
+      console.error("Failed to save student record:", error);
       showStatus("error", "Failed to save student record.");
     }
   };
@@ -330,9 +313,10 @@ function AdminContent() {
 
     try {
       await deleteStudent(studentId);
-      setStudents(students.filter((s) => s.id !== studentId));
+      setStudents((prev) => prev.filter((s) => s.id !== studentId));
       showStatus("success", `Deleted student "${name}".`);
-    } catch {
+    } catch (error) {
+      console.error("Failed to delete student:", error);
       showStatus("error", "Failed to delete student.");
     }
   };
@@ -385,20 +369,25 @@ function AdminContent() {
     reader.onload = async (event) => {
       try {
         const json = JSON.parse(event.target?.result as string);
-        if (json.classes && json.students) {
+        if (Array.isArray(json.classes) && Array.isArray(json.students)) {
           if (json.settings) await saveResultsSettings(json.settings);
           for (const c of json.classes) await saveClass(c);
           for (const s of json.students) await saveStudent(s);
           await loadAllData();
           showStatus("success", "Imported backup dataset successfully!");
         } else {
-          showStatus("error", "Invalid backup JSON format.");
+          showStatus(
+            "error",
+            "Invalid backup JSON format: 'classes' and 'students' arrays are required.",
+          );
         }
-      } catch {
+      } catch (err) {
+        console.error("JSON parse or import error:", err);
         showStatus("error", "Failed to parse JSON file.");
       }
     };
     reader.readAsText(file);
+    e.target.value = "";
   };
 
   // 1. Authentication Gate (Email & Password)
