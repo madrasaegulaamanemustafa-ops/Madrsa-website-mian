@@ -277,17 +277,36 @@ function AdminContent() {
     const selectedClass = classes.find((c) => c.id === formStudent.classId);
     const id = editingStudentId || `stu-${Date.now()}`;
 
+    const pct = Number(formStudent.percentage) || 0;
+    const rk = Number(formStudent.rank) || 1;
+    const autoGrade =
+      pct >= 90
+        ? "Mumtaz (A+)"
+        : pct >= 80
+          ? "Jayyid Jiddan (A)"
+          : pct >= 65
+            ? "Jayyid (B)"
+            : "Maqbool (C)";
+    const autoRemarks =
+      rk === 1
+        ? "1st Position — Gold Medalist"
+        : rk === 2
+          ? "2nd Position — Silver Medalist"
+          : rk === 3
+            ? "3rd Position — Bronze Medalist"
+            : `${rk}th Position Distinction`;
+
     const studentRecord: StudentResult = {
       id,
       name: formStudent.name.trim(),
       rollNo: formStudent.rollNo?.trim() || "",
       classId: formStudent.classId,
       className: selectedClass?.name || "Islamic Studies",
-      rank: Number(formStudent.rank) || 1,
-      percentage: Number(formStudent.percentage) || 0,
+      rank: rk,
+      percentage: pct,
       marksObtained: formStudent.marksObtained?.trim() || "",
-      grade: formStudent.grade?.trim() || "Mumtaz (A+)",
-      remarks: formStudent.remarks?.trim() || "",
+      grade: formStudent.grade || autoGrade,
+      remarks: formStudent.remarks || autoRemarks,
       term: formStudent.term?.trim() || settings.activeExamTitle,
     };
 
@@ -972,44 +991,16 @@ function AdminContent() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-black uppercase tracking-wider text-emerald-deep mb-1">
-                    Roll Number
-                  </label>
-                  <input
-                    type="text"
-                    value={formStudent.rollNo || ""}
-                    onChange={(e) => setFormStudent({ ...formStudent, rollNo: e.target.value })}
-                    placeholder="e.g. MGM-2026-042"
-                    className="w-full rounded-xl border border-emerald-deep/20 px-4 py-2.5 text-sm font-mono text-emerald-deep focus:outline-none focus:border-amber-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-black uppercase tracking-wider text-emerald-deep mb-1">
-                    Grade / Award
-                  </label>
-                  <input
-                    type="text"
-                    value={formStudent.grade || ""}
-                    onChange={(e) => setFormStudent({ ...formStudent, grade: e.target.value })}
-                    placeholder="e.g. Mumtaz (A+)"
-                    className="w-full rounded-xl border border-emerald-deep/20 px-4 py-2.5 text-sm font-semibold text-emerald-deep focus:outline-none focus:border-amber-500"
-                  />
-                </div>
-              </div>
-
               <div>
                 <label className="block text-xs font-black uppercase tracking-wider text-emerald-deep mb-1">
-                  Remarks / Special Distinction
+                  Roll Number
                 </label>
                 <input
                   type="text"
-                  value={formStudent.remarks || ""}
-                  onChange={(e) => setFormStudent({ ...formStudent, remarks: e.target.value })}
-                  placeholder="e.g. 1st Position — Gold Medalist"
-                  className="w-full rounded-xl border border-emerald-deep/20 px-4 py-2.5 text-sm font-semibold text-emerald-deep focus:outline-none focus:border-amber-500"
+                  value={formStudent.rollNo || ""}
+                  onChange={(e) => setFormStudent({ ...formStudent, rollNo: e.target.value })}
+                  placeholder="e.g. MGM-2026-042"
+                  className="w-full rounded-xl border border-emerald-deep/20 px-4 py-2.5 text-sm font-mono text-emerald-deep focus:outline-none focus:border-amber-500"
                 />
               </div>
 
