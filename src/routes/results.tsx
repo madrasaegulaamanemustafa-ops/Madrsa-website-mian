@@ -144,21 +144,20 @@ function ResultsContent() {
   };
 
   const getStudentsForClass = (classId: string) => {
-    let list = students.filter((s) => s.classId === classId);
+    const list = students.filter((s) => s.classId === classId);
+    const ranked = computeTiedRanks(list);
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
-      list = list.filter(
+      return ranked.filter(
         (s) =>
           (s.name || "").toLowerCase().includes(q) || (s.rollNo || "").toLowerCase().includes(q),
       );
     }
 
-    const ranked = computeTiedRanks(list);
-
-    // Apply display limit if set (> 0) and not searching
-    if (settings.displayLimit > 0 && !searchQuery.trim()) {
-      return ranked.slice(0, settings.displayLimit);
+    // Apply display limit by rank positions (Top N Ranks, e.g. Top 5 Ranks) so tied students aren't chopped off
+    if (settings.displayLimit > 0) {
+      return ranked.filter((s) => s.computedRank <= settings.displayLimit);
     }
 
     return ranked;
@@ -654,7 +653,7 @@ function PodiumSlotCard({
           </div>
         </div>
 
-        <div className="space-y-2.5">
+        <div className="space-y-2.5 max-h-80 overflow-y-auto pr-1">
           {students.map((st) => (
             <div
               key={st.id}
