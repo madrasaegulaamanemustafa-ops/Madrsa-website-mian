@@ -9,7 +9,6 @@ export interface StudentResult {
   rank: number; // 1, 2, 3, 4, 5, etc.
   percentage: number; // e.g. 98.5
   marksObtained?: string; // e.g. "492/500"
-  grade: string; // e.g. "Mumtaz (A+)", "Jayyid Jiddan (A)"
   remarks?: string;
   term: string; // e.g. "Monthly Fatah-E-Battle — 2026"
   avatar?: string;
@@ -32,7 +31,6 @@ interface SupabaseStudentRow {
   rank: number;
   percentage: number | string;
   marks_obtained?: string | null;
-  grade?: string | null;
   remarks?: string | null;
   term?: string | null;
   avatar?: string | null;
@@ -92,7 +90,6 @@ export const DEFAULT_STUDENTS: StudentResult[] = [
     rank: 1,
     percentage: 98.6,
     marksObtained: "493/500",
-    grade: "Mumtaz (A+)",
     remarks: "1st Position — Gold Medalist",
     term: "Monthly Fatah-E-Battle — 2026",
   },
@@ -105,7 +102,6 @@ export const DEFAULT_STUDENTS: StudentResult[] = [
     rank: 2,
     percentage: 97.2,
     marksObtained: "486/500",
-    grade: "Mumtaz (A+)",
     remarks: "2nd Position — Silver Medalist",
     term: "Monthly Fatah-E-Battle — 2026",
   },
@@ -118,7 +114,6 @@ export const DEFAULT_STUDENTS: StudentResult[] = [
     rank: 3,
     percentage: 95.8,
     marksObtained: "479/500",
-    grade: "Mumtaz (A+)",
     remarks: "3rd Position — Bronze Medalist",
     term: "Monthly Fatah-E-Battle — 2026",
   },
@@ -131,7 +126,6 @@ export const DEFAULT_STUDENTS: StudentResult[] = [
     rank: 4,
     percentage: 94.0,
     marksObtained: "470/500",
-    grade: "Jayyid Jiddan (A)",
     remarks: "4th Position Distinction",
     term: "Monthly Fatah-E-Battle — 2026",
   },
@@ -144,7 +138,6 @@ export const DEFAULT_STUDENTS: StudentResult[] = [
     rank: 5,
     percentage: 92.5,
     marksObtained: "462/500",
-    grade: "Jayyid Jiddan (A)",
     remarks: "5th Position Distinction",
     term: "Monthly Fatah-E-Battle — 2026",
   },
@@ -159,7 +152,6 @@ export const DEFAULT_STUDENTS: StudentResult[] = [
     rank: 1,
     percentage: 99.0,
     marksObtained: "495/500",
-    grade: "Mumtaz (A+)",
     remarks: "1st Position — Gold Medalist",
     term: "Monthly Fatah-E-Battle — 2026",
   },
@@ -172,7 +164,6 @@ export const DEFAULT_STUDENTS: StudentResult[] = [
     rank: 2,
     percentage: 97.8,
     marksObtained: "489/500",
-    grade: "Mumtaz (A+)",
     remarks: "2nd Position — Silver Medalist",
     term: "Monthly Fatah-E-Battle — 2026",
   },
@@ -185,7 +176,6 @@ export const DEFAULT_STUDENTS: StudentResult[] = [
     rank: 3,
     percentage: 96.4,
     marksObtained: "482/500",
-    grade: "Mumtaz (A+)",
     remarks: "3rd Position — Bronze Medalist",
     term: "Monthly Fatah-E-Battle — 2026",
   },
@@ -198,7 +188,6 @@ export const DEFAULT_STUDENTS: StudentResult[] = [
     rank: 4,
     percentage: 94.6,
     marksObtained: "473/500",
-    grade: "Jayyid Jiddan (A)",
     remarks: "4th Position Distinction",
     term: "Monthly Fatah-E-Battle — 2026",
   },
@@ -211,7 +200,6 @@ export const DEFAULT_STUDENTS: StudentResult[] = [
     rank: 5,
     percentage: 93.0,
     marksObtained: "465/500",
-    grade: "Jayyid Jiddan (A)",
     remarks: "5th Position Distinction",
     term: "Monthly Fatah-E-Battle — 2026",
   },
@@ -226,7 +214,6 @@ export const DEFAULT_STUDENTS: StudentResult[] = [
     rank: 1,
     percentage: 99.5,
     marksObtained: "199/200",
-    grade: "Mumtaz Star (A+)",
     remarks: "Kids Champion & Quiz Winner",
     term: "Monthly Fatah-E-Battle — 2026",
   },
@@ -239,7 +226,6 @@ export const DEFAULT_STUDENTS: StudentResult[] = [
     rank: 2,
     percentage: 98.0,
     marksObtained: "196/200",
-    grade: "Mumtaz Star (A+)",
     remarks: "Kids 2nd Position",
     term: "Monthly Fatah-E-Battle — 2026",
   },
@@ -252,7 +238,6 @@ export const DEFAULT_STUDENTS: StudentResult[] = [
     rank: 3,
     percentage: 96.5,
     marksObtained: "193/200",
-    grade: "Mumtaz (A+)",
     remarks: "Kids 3rd Position",
     term: "Monthly Fatah-E-Battle — 2026",
   },
@@ -265,7 +250,6 @@ export const DEFAULT_STUDENTS: StudentResult[] = [
     rank: 4,
     percentage: 95.0,
     marksObtained: "190/200",
-    grade: "Jayyid (A)",
     remarks: "Kids 4th Position",
     term: "Monthly Fatah-E-Battle — 2026",
   },
@@ -278,7 +262,6 @@ export const DEFAULT_STUDENTS: StudentResult[] = [
     rank: 5,
     percentage: 93.5,
     marksObtained: "187/200",
-    grade: "Jayyid (A)",
     remarks: "Kids 5th Position",
     term: "Monthly Fatah-E-Battle — 2026",
   },
@@ -293,7 +276,6 @@ export const DEFAULT_STUDENTS: StudentResult[] = [
     rank: 1,
     percentage: 99.2,
     marksObtained: "496/500",
-    grade: "Mumtaz (A+)",
     remarks: "Flawless Makharij & Ahkaam",
     term: "Monthly Fatah-E-Battle — 2026",
   },
@@ -306,7 +288,6 @@ export const DEFAULT_STUDENTS: StudentResult[] = [
     rank: 2,
     percentage: 97.5,
     marksObtained: "487/500",
-    grade: "Mumtaz (A+)",
     remarks: "2nd Position",
     term: "Monthly Fatah-E-Battle — 2026",
   },
@@ -319,7 +300,6 @@ export const DEFAULT_STUDENTS: StudentResult[] = [
     rank: 3,
     percentage: 95.5,
     marksObtained: "477/500",
-    grade: "Mumtaz (A+)",
     remarks: "3rd Position",
     term: "Monthly Fatah-E-Battle — 2026",
   },
@@ -377,33 +357,35 @@ export function getLocalStudents(): StudentResult[] {
 
 // 1. Settings
 export async function getResultsSettings(): Promise<ResultsSettings> {
-  const current = getLocalSettings();
+  const local = getLocalSettings();
 
-  // Non-blocking background sync only if Supabase is configured
   if (typeof window !== "undefined" && isSupabaseConfigured()) {
-    withTimeout(supabase.from("settings").select("*").eq("id", "results_config").single(), 2500)
-      .then(({ data, error }) => {
-        if (data && !error) {
-          const mapped: ResultsSettings = {
-            displayLimit: data.display_limit ?? DEFAULT_SETTINGS.displayLimit,
-            activeExamTitle: data.active_exam_title || DEFAULT_SETTINGS.activeExamTitle,
-            sessionYear: data.session_year || DEFAULT_SETTINGS.sessionYear,
-            adminPin: data.admin_pin || DEFAULT_SETTINGS.adminPin,
-            adminEmail: data.admin_email || DEFAULT_SETTINGS.adminEmail,
-            adminPassword: data.admin_password || DEFAULT_SETTINGS.adminPassword,
-            showRollNumbers: data.show_roll_numbers ?? true,
-            showPercentages: data.show_percentages ?? true,
-            bannerNotice: data.banner_notice || DEFAULT_SETTINGS.bannerNotice,
-          };
-          localStorage.setItem(LOCAL_STORAGE_KEY_SETTINGS, JSON.stringify(mapped));
-        }
-      })
-      .catch((err) => {
-        console.debug("Settings sync skipped:", err?.message);
-      });
+    try {
+      const { data, error } = await withTimeout(
+        supabase.from("settings").select("*").eq("id", "results_config").single(),
+        3500,
+      );
+      if (data && !error) {
+        const mapped: ResultsSettings = {
+          displayLimit: data.display_limit ?? DEFAULT_SETTINGS.displayLimit,
+          activeExamTitle: data.active_exam_title || DEFAULT_SETTINGS.activeExamTitle,
+          sessionYear: data.session_year || DEFAULT_SETTINGS.sessionYear,
+          adminPin: data.admin_pin || DEFAULT_SETTINGS.adminPin,
+          adminEmail: data.admin_email || DEFAULT_SETTINGS.adminEmail,
+          adminPassword: data.admin_password || DEFAULT_SETTINGS.adminPassword,
+          showRollNumbers: data.show_roll_numbers ?? true,
+          showPercentages: data.show_percentages ?? true,
+          bannerNotice: data.banner_notice || DEFAULT_SETTINGS.bannerNotice,
+        };
+        localStorage.setItem(LOCAL_STORAGE_KEY_SETTINGS, JSON.stringify(mapped));
+        return mapped;
+      }
+    } catch (err) {
+      console.debug("Settings live sync skipped, using cache:", err);
+    }
   }
 
-  return current;
+  return local;
 }
 
 export async function saveResultsSettings(settings: ResultsSettings): Promise<void> {
@@ -413,7 +395,7 @@ export async function saveResultsSettings(settings: ResultsSettings): Promise<vo
   if (!isSupabaseConfigured()) return;
 
   try {
-    await withTimeout(
+    const { error } = await withTimeout(
       supabase.from("settings").upsert({
         id: "results_config",
         display_limit: settings.displayLimit,
@@ -426,37 +408,44 @@ export async function saveResultsSettings(settings: ResultsSettings): Promise<vo
         show_percentages: settings.showPercentages,
         banner_notice: settings.bannerNotice,
       }),
-      2500,
+      3500,
     );
+    if (error) {
+      console.error("Supabase settings upsert error:", error);
+      throw error;
+    }
   } catch (error) {
     console.warn("Supabase sync offline/timed out, saved locally:", error);
+    throw error;
   }
 }
 
 // 2. Classes
 export async function getClasses(): Promise<ClassCategory[]> {
-  const current = getLocalClasses();
+  const local = getLocalClasses();
 
-  // Background sync only if Supabase is configured
   if (typeof window !== "undefined" && isSupabaseConfigured()) {
-    withTimeout(supabase.from("classes").select("*").order("order_num", { ascending: true }), 2500)
-      .then(({ data, error }) => {
-        if (data && data.length > 0 && !error) {
-          const mapped: ClassCategory[] = (data as SupabaseClassRow[]).map((d) => ({
-            id: d.id,
-            name: d.name,
-            description: d.description || undefined,
-            order: d.order_num ?? 1,
-          }));
-          localStorage.setItem(LOCAL_STORAGE_KEY_CLASSES, JSON.stringify(mapped));
-        }
-      })
-      .catch((err) => {
-        console.debug("Classes sync skipped:", err?.message);
-      });
+    try {
+      const { data, error } = await withTimeout(
+        supabase.from("classes").select("*").order("order_num", { ascending: true }),
+        3500,
+      );
+      if (data && data.length > 0 && !error) {
+        const mapped: ClassCategory[] = (data as SupabaseClassRow[]).map((d) => ({
+          id: d.id,
+          name: d.name,
+          description: d.description || undefined,
+          order: d.order_num ?? 1,
+        }));
+        localStorage.setItem(LOCAL_STORAGE_KEY_CLASSES, JSON.stringify(mapped));
+        return mapped;
+      }
+    } catch (err) {
+      console.debug("Classes live sync skipped, using cache:", err);
+    }
   }
 
-  return current;
+  return local;
 }
 
 export async function saveClass(cls: ClassCategory): Promise<void> {
@@ -474,17 +463,22 @@ export async function saveClass(cls: ClassCategory): Promise<void> {
   if (!isSupabaseConfigured()) return;
 
   try {
-    await withTimeout(
+    const { error } = await withTimeout(
       supabase.from("classes").upsert({
         id: cls.id,
         name: cls.name,
         description: cls.description || null,
         order_num: cls.order,
       }),
-      2500,
+      3500,
     );
+    if (error) {
+      console.error("Supabase saveClass error:", error);
+      throw error;
+    }
   } catch (error) {
     console.warn("Supabase saveClass offline/timed out, saved locally:", error);
+    throw error;
   }
 }
 
@@ -497,44 +491,50 @@ export async function deleteClass(classId: string): Promise<void> {
   if (!isSupabaseConfigured()) return;
 
   try {
-    await withTimeout(supabase.from("classes").delete().eq("id", classId), 2500);
+    const { error } = await withTimeout(supabase.from("classes").delete().eq("id", classId), 3500);
+    if (error) {
+      console.error("Supabase deleteClass error:", error);
+      throw error;
+    }
   } catch (error) {
     console.warn("Supabase deleteClass offline/timed out, saved locally:", error);
+    throw error;
   }
 }
 
 // 3. Students
 export async function getStudents(): Promise<StudentResult[]> {
-  const current = getLocalStudents();
+  const local = getLocalStudents();
 
-  // Background sync only if Supabase is configured
   if (typeof window !== "undefined" && isSupabaseConfigured()) {
-    withTimeout(supabase.from("students").select("*").order("rank", { ascending: true }), 2500)
-      .then(({ data, error }) => {
-        if (data && data.length > 0 && !error) {
-          const mapped: StudentResult[] = (data as SupabaseStudentRow[]).map((d) => ({
-            id: d.id,
-            name: d.name,
-            rollNo: d.roll_no || "",
-            classId: d.class_id,
-            className: d.class_name,
-            rank: d.rank,
-            percentage: Number(d.percentage) || 0,
-            marksObtained: d.marks_obtained || "",
-            grade: d.grade || "Mumtaz (A+)",
-            remarks: d.remarks || "",
-            term: d.term || "Annual Examination",
-            avatar: d.avatar || undefined,
-          }));
-          localStorage.setItem(LOCAL_STORAGE_KEY_STUDENTS, JSON.stringify(mapped));
-        }
-      })
-      .catch((err) => {
-        console.debug("Students sync skipped:", err?.message);
-      });
+    try {
+      const { data, error } = await withTimeout(
+        supabase.from("students").select("*").order("rank", { ascending: true }),
+        3500,
+      );
+      if (data && data.length > 0 && !error) {
+        const mapped: StudentResult[] = (data as SupabaseStudentRow[]).map((d) => ({
+          id: d.id,
+          name: d.name,
+          rollNo: d.roll_no || "",
+          classId: d.class_id,
+          className: d.class_name,
+          rank: d.rank,
+          percentage: Number(d.percentage) || 0,
+          marksObtained: d.marks_obtained || "",
+          remarks: d.remarks || "",
+          term: d.term || "Annual Examination",
+          avatar: d.avatar || undefined,
+        }));
+        localStorage.setItem(LOCAL_STORAGE_KEY_STUDENTS, JSON.stringify(mapped));
+        return mapped;
+      }
+    } catch (err) {
+      console.debug("Students live sync skipped, using cache:", err);
+    }
   }
 
-  return current;
+  return local;
 }
 
 export async function saveStudent(student: StudentResult): Promise<void> {
@@ -552,7 +552,7 @@ export async function saveStudent(student: StudentResult): Promise<void> {
   if (!isSupabaseConfigured()) return;
 
   try {
-    await withTimeout(
+    const { error } = await withTimeout(
       supabase.from("students").upsert({
         id: student.id,
         name: student.name,
@@ -562,15 +562,19 @@ export async function saveStudent(student: StudentResult): Promise<void> {
         rank: student.rank,
         percentage: student.percentage,
         marks_obtained: student.marksObtained || null,
-        grade: student.grade || "Mumtaz (A+)",
         remarks: student.remarks || null,
         term: student.term,
         avatar: student.avatar || null,
       }),
-      2500,
+      3500,
     );
+    if (error) {
+      console.error("Supabase saveStudent error:", error);
+      throw error;
+    }
   } catch (error) {
     console.warn("Supabase saveStudent offline/timed out, saved locally:", error);
+    throw error;
   }
 }
 
@@ -583,9 +587,17 @@ export async function deleteStudent(studentId: string): Promise<void> {
   if (!isSupabaseConfigured()) return;
 
   try {
-    await withTimeout(supabase.from("students").delete().eq("id", studentId), 2500);
+    const { error } = await withTimeout(
+      supabase.from("students").delete().eq("id", studentId),
+      3500,
+    );
+    if (error) {
+      console.error("Supabase deleteStudent error:", error);
+      throw error;
+    }
   } catch (error) {
     console.warn("Supabase deleteStudent offline/timed out, saved locally:", error);
+    throw error;
   }
 }
 
@@ -635,7 +647,6 @@ export async function seedAllDefaultsToSupabase(): Promise<void> {
       rank: s.rank,
       percentage: s.percentage,
       marks_obtained: s.marksObtained || null,
-      grade: s.grade || "Mumtaz (A+)",
       remarks: s.remarks || null,
       term: s.term,
       avatar: s.avatar || null,
@@ -648,3 +659,70 @@ export async function seedAllDefaultsToSupabase(): Promise<void> {
 
 // Alias for database seeding
 export const seedAllDefaultsToDatabase = seedAllDefaultsToSupabase;
+
+// Atomic full backup restoration for LocalStorage and Supabase
+export async function restoreBackupDataset(backup: {
+  settings?: ResultsSettings;
+  classes: ClassCategory[];
+  students: StudentResult[];
+}): Promise<void> {
+  if (typeof window !== "undefined") {
+    if (backup.settings) {
+      localStorage.setItem(LOCAL_STORAGE_KEY_SETTINGS, JSON.stringify(backup.settings));
+    }
+    localStorage.setItem(LOCAL_STORAGE_KEY_CLASSES, JSON.stringify(backup.classes));
+    localStorage.setItem(LOCAL_STORAGE_KEY_STUDENTS, JSON.stringify(backup.students));
+  }
+
+  if (!isSupabaseConfigured()) return;
+
+  try {
+    if (backup.settings) {
+      await withTimeout(
+        supabase.from("settings").upsert({
+          id: "results_config",
+          display_limit: backup.settings.displayLimit,
+          active_exam_title: backup.settings.activeExamTitle,
+          session_year: backup.settings.sessionYear,
+          admin_pin: backup.settings.adminPin || "7860",
+          admin_email: backup.settings.adminEmail,
+          admin_password: backup.settings.adminPassword,
+          show_roll_numbers: backup.settings.showRollNumbers,
+          show_percentages: backup.settings.showPercentages,
+          banner_notice: backup.settings.bannerNotice,
+        }),
+        3500,
+      );
+    }
+
+    if (backup.classes && backup.classes.length > 0) {
+      const classesPayload = backup.classes.map((c) => ({
+        id: c.id,
+        name: c.name,
+        description: c.description || null,
+        order_num: c.order,
+      }));
+      await withTimeout(supabase.from("classes").upsert(classesPayload), 3500);
+    }
+
+    if (backup.students && backup.students.length > 0) {
+      const studentsPayload = backup.students.map((s) => ({
+        id: s.id,
+        name: s.name,
+        roll_no: s.rollNo || null,
+        class_id: s.classId,
+        class_name: s.className,
+        rank: s.rank,
+        percentage: s.percentage,
+        marks_obtained: s.marksObtained || null,
+        remarks: s.remarks || null,
+        term: s.term,
+        avatar: s.avatar || null,
+      }));
+      await withTimeout(supabase.from("students").upsert(studentsPayload), 3500);
+    }
+  } catch (error) {
+    console.warn("Supabase restore backup sync offline/timed out, saved locally:", error);
+  }
+}
+

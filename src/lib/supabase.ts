@@ -3,23 +3,22 @@ import { createClient } from "@supabase/supabase-js";
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://srtsliweuqivnsngmzbn.supabase.co";
 const supabaseAnonKey =
   import.meta.env.VITE_SUPABASE_ANON_KEY ||
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNydHNsaXdldXFpdm5zbmdtemJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDQ5ODEsImV4cCI6MjA1NzYyMDk4MX0.X_b";
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNydHNsaXdldXFpdm5zbmdtemJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4NzY4ODQsImV4cCI6MjA5ODQ1Mjg4NH0.vouixVTDwwch71z4OXaH2KKXGqIEvBGiat-Eyt2IyGw";
 
 // Check whether a valid production Supabase key is configured
 export const isSupabaseConfigured = (): boolean => {
-  const url = import.meta.env.VITE_SUPABASE_URL || "";
-  const key = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
+  const url = import.meta.env.VITE_SUPABASE_URL || "https://srtsliweuqivnsngmzbn.supabase.co";
+  const key =
+    import.meta.env.VITE_SUPABASE_ANON_KEY ||
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNydHNsaXdldXFpdm5zbmdtemJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4NzY4ODQsImV4cCI6MjA5ODQ1Mjg4NH0.vouixVTDwwch71z4OXaH2KKXGqIEvBGiat-Eyt2IyGw";
   if (!url || !key || key.endsWith(".X_b") || key.length < 50 || key.split(".").length !== 3) {
     return false;
   }
   return true;
 };
 
-// Initialize Supabase Client with dedicated 'madrasa' schema
+// Initialize Supabase Client with standard 'public' schema
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  db: {
-    schema: "madrasa",
-  },
   auth: {
     persistSession: false,
     autoRefreshToken: false,

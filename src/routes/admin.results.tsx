@@ -13,6 +13,7 @@ import {
   deleteClass,
   saveResultsSettings,
   seedAllDefaultsToDatabase,
+  restoreBackupDataset,
   StudentResult,
   ClassCategory,
   ResultsSettings,
@@ -20,6 +21,7 @@ import {
   DEFAULT_CLASSES,
   DEFAULT_STUDENTS,
 } from "@/lib/resultsService";
+import { isSupabaseConfigured } from "@/lib/supabase";
 import {
   Mail,
   Lock,
@@ -73,6 +75,7 @@ function AdminContent() {
   const [enteredPassword, setEnteredPassword] = useState<string>("");
   const [loginError, setLoginError] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showSettingsPassword, setShowSettingsPassword] = useState<boolean>(false);
 
   const [students, setStudents] = useState<StudentResult[]>(() =>
     typeof window !== "undefined" ? getLocalStudents() : DEFAULT_STUDENTS,
@@ -236,9 +239,7 @@ function AdminContent() {
     try {
       await saveClass(updatedCls);
       const affectedStudents = students.filter((s) => s.classId === classId);
-      await Promise.all(
-        affectedStudents.map((s) => saveStudent({ ...s, className: newName })),
-      );
+      await Promise.all(affectedStudents.map((s) => saveStudent({ ...s, className: newName })));
       setClasses((prev) => prev.map((c) => (c.id === classId ? updatedCls : c)));
       setStudents(updatedStudents);
       setEditingClassId(null);
@@ -279,6 +280,7 @@ function AdminContent() {
 
     const selectedClass = classes.find((c) => c.id === formStudent.classId);
     const id = editingStudentId || `stu-${Date.now()}`;
+    const pct = Number(formStudent.percentage) || 0;
 
     const studentRecord: StudentResult = {
       id,
@@ -287,7 +289,7 @@ function AdminContent() {
       classId: formStudent.classId,
       className: selectedClass?.name || "",
       rank: Number(formStudent.rank) || 1,
-      percentage: Number(formStudent.percentage) || 0,
+      percentage: pct,
       marksObtained: formStudent.marksObtained?.trim() || "",
       term: formStudent.term?.trim() || settings.activeExamTitle,
     };
@@ -368,11 +370,14 @@ function AdminContent() {
     const reader = new FileReader();
     reader.onload = async (event) => {
       try {
+        setLoading(true);
         const json = JSON.parse(event.target?.result as string);
         if (Array.isArray(json.classes) && Array.isArray(json.students)) {
-          if (json.settings) await saveResultsSettings(json.settings);
-          for (const c of json.classes) await saveClass(c);
-          for (const s of json.students) await saveStudent(s);
+          await restoreBackupDataset({
+            settings: json.settings,
+            classes: json.classes,
+            students: json.students,
+          });
           await loadAllData();
           showStatus("success", "Imported backup dataset successfully!");
         } else {
@@ -384,6 +389,8 @@ function AdminContent() {
       } catch (err) {
         console.error("JSON parse or import error:", err);
         showStatus("error", "Failed to parse JSON file.");
+      } finally {
+        setLoading(false);
       }
     };
     reader.readAsText(file);
@@ -535,7 +542,7 @@ function AdminContent() {
       {/* Global Status Notification */}
       {statusMsg && (
         <div
-          className={`p-4 rounded-2xl mb-8 text-sm font-bold flex items-center gap-3 animate-fade-up ${
+          className={`p-4 rounded-2xl mb-6 text-sm font-bold flex items-center gap-3 animate-fade-up ${
             statusMsg.type === "success"
               ? "bg-emerald-100 text-emerald-900 border border-emerald-300"
               : "bg-red-100 text-red-900 border border-red-300"
@@ -545,6 +552,38 @@ function AdminContent() {
           <span>{statusMsg.text}</span>
         </div>
       )}
+
+      {/* Cloud Sync Status Banner */}
+      <div
+        className={`p-4 rounded-2xl mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-bold border ${
+          isSupabaseConfigured()
+            ? "bg-emerald-50 text-emerald-900 border-emerald-200"
+            : "bg-amber-50 text-amber-900 border-amber-300"
+        }`}
+      >
+        <div className="flex items-center gap-2.5">
+          <span
+            className={`h-3 w-3 rounded-full shrink-0 ${
+              isSupabaseConfigured() ? "bg-emerald-500 animate-pulse" : "bg-amber-500"
+            }`}
+          />
+          <span>
+            {isSupabaseConfigured()
+              ? "Cloud Database Connected: All edits automatically sync across all mobile devices & browsers in real time."
+              : "⚠️ Offline Local Mode: Supabase API credentials are not set in .env. Changes are saved ONLY to this browser and will not appear on other devices until VITE_SUPABASE_ANON_KEY is configured."}
+          </span>
+        </div>
+        {isSupabaseConfigured() && (
+          <button
+            onClick={loadAllData}
+            type="button"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-700 text-white rounded-xl hover:bg-emerald-800 transition-colors self-start sm:self-auto cursor-pointer"
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+            <span>Force Sync Cloud</span>
+          </button>
+        )}
+      </div>
 
       {/* Section 1: Global Display Settings & Session Title */}
       <div className="rounded-3xl bg-white border border-emerald-deep/15 p-6 sm:p-8 shadow-soft mb-10">
@@ -616,13 +655,23 @@ function AdminContent() {
             <label className="block text-xs font-black uppercase tracking-wider text-emerald-deep mb-2">
               Admin Login Password
             </label>
-            <input
-              type="text"
-              value={settings.adminPassword}
-              onChange={(e) => setSettings({ ...settings, adminPassword: e.target.value })}
-              placeholder="madrasa@admin786"
-              className="w-full rounded-2xl border border-emerald-deep/20 px-4 py-3 text-sm font-bold text-emerald-deep focus:outline-none focus:border-amber-500 font-mono"
-            />
+            <div className="relative">
+              <input
+                type={showSettingsPassword ? "text" : "password"}
+                value={settings.adminPassword}
+                onChange={(e) => setSettings({ ...settings, adminPassword: e.target.value })}
+                placeholder="madrasa@admin786"
+                className="w-full rounded-2xl border border-emerald-deep/20 px-4 pr-11 py-3 text-sm font-bold text-emerald-deep focus:outline-none focus:border-amber-500 font-mono"
+              />
+              <button
+                type="button"
+                onClick={() => setShowSettingsPassword(!showSettingsPassword)}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-emerald-deep/60 hover:text-emerald-deep p-1 cursor-pointer"
+                title={showSettingsPassword ? "Hide Password" : "Show Password"}
+              >
+                {showSettingsPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
           </div>
 
           <div className="md:col-span-3">

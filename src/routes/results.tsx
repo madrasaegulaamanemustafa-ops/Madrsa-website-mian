@@ -112,7 +112,9 @@ function ResultsContent() {
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
       list = list.filter(
-        (s) => s.name.toLowerCase().includes(q) || s.rollNo.toLowerCase().includes(q),
+        (s) =>
+          (s.name || "").toLowerCase().includes(q) ||
+          (s.rollNo || "").toLowerCase().includes(q),
       );
     }
 
@@ -304,20 +306,8 @@ function ResultsContent() {
 
                     {top3.length >= 3 && (
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 items-stretch">
-                        {/* Rank 2 (Silver) */}
-                        <PodiumCard
-                          student={top3[1]}
-                          rank={2}
-                          badgeColor="bg-slate-200 text-slate-800 border-slate-300"
-                          ribbonColor="from-slate-400 to-slate-200"
-                          glowClass="border-slate-300/80 shadow-md"
-                          onShare={() => handleShareResult(top3[1])}
-                          showRoll={settings.showRollNumbers}
-                          showPct={settings.showPercentages}
-                        />
-
-                        {/* Rank 1 (Gold - Elevated in Center) */}
-                        <div className="md:-translate-y-4">
+                        {/* Rank 1 (Gold - 1st on mobile, Center on Desktop) */}
+                        <div className="order-1 md:order-2 md:-translate-y-4">
                           <PodiumCard
                             student={top3[0]}
                             rank={1}
@@ -331,17 +321,33 @@ function ResultsContent() {
                           />
                         </div>
 
-                        {/* Rank 3 (Bronze) */}
-                        <PodiumCard
-                          student={top3[2]}
-                          rank={3}
-                          badgeColor="bg-amber-700/20 text-amber-900 border-amber-600/30"
-                          ribbonColor="from-amber-700 to-amber-500"
-                          glowClass="border-amber-700/40 shadow-md"
-                          onShare={() => handleShareResult(top3[2])}
-                          showRoll={settings.showRollNumbers}
-                          showPct={settings.showPercentages}
-                        />
+                        {/* Rank 2 (Silver - 2nd on mobile, Left on Desktop) */}
+                        <div className="order-2 md:order-1">
+                          <PodiumCard
+                            student={top3[1]}
+                            rank={2}
+                            badgeColor="bg-slate-200 text-slate-800 border-slate-300"
+                            ribbonColor="from-slate-400 to-slate-200"
+                            glowClass="border-slate-300/80 shadow-md"
+                            onShare={() => handleShareResult(top3[1])}
+                            showRoll={settings.showRollNumbers}
+                            showPct={settings.showPercentages}
+                          />
+                        </div>
+
+                        {/* Rank 3 (Bronze - 3rd on mobile, Right on Desktop) */}
+                        <div className="order-3 md:order-3">
+                          <PodiumCard
+                            student={top3[2]}
+                            rank={3}
+                            badgeColor="bg-amber-700/20 text-amber-900 border-amber-600/30"
+                            ribbonColor="from-amber-700 to-amber-500"
+                            glowClass="border-amber-700/40 shadow-md"
+                            onShare={() => handleShareResult(top3[2])}
+                            showRoll={settings.showRollNumbers}
+                            showPct={settings.showPercentages}
+                          />
+                        </div>
                       </div>
                     )}
 
