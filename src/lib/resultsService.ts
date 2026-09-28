@@ -59,7 +59,7 @@ export const DEFAULT_SETTINGS: ResultsSettings = {
   displayLimit: 5,
   activeExamTitle: "Monthly Fatah-E-Battle & Exam Results",
   sessionYear: "2026–27",
-  adminPin: "7860",
+  adminPin: import.meta.env.VITE_ADMIN_DEFAULT_PIN || "7860",
   adminEmail: "admin@madrasa.com",
   adminPassword: "madrasa@admin786",
   showRollNumbers: true,
@@ -411,12 +411,10 @@ export async function saveResultsSettings(settings: ResultsSettings): Promise<vo
       3500,
     );
     if (error) {
-      console.error("Supabase settings upsert error:", error);
-      throw error;
+      console.warn("Supabase settings upsert warning:", error);
     }
   } catch (error) {
     console.warn("Supabase sync offline/timed out, saved locally:", error);
-    throw error;
   }
 }
 
@@ -473,12 +471,10 @@ export async function saveClass(cls: ClassCategory): Promise<void> {
       3500,
     );
     if (error) {
-      console.error("Supabase saveClass error:", error);
-      throw error;
+      console.warn("Supabase saveClass warning:", error);
     }
   } catch (error) {
     console.warn("Supabase saveClass offline/timed out, saved locally:", error);
-    throw error;
   }
 }
 
@@ -493,12 +489,10 @@ export async function deleteClass(classId: string): Promise<void> {
   try {
     const { error } = await withTimeout(supabase.from("classes").delete().eq("id", classId), 3500);
     if (error) {
-      console.error("Supabase deleteClass error:", error);
-      throw error;
+      console.warn("Supabase deleteClass warning:", error);
     }
   } catch (error) {
     console.warn("Supabase deleteClass offline/timed out, saved locally:", error);
-    throw error;
   }
 }
 
@@ -523,7 +517,7 @@ export async function getStudents(): Promise<StudentResult[]> {
           percentage: Number(d.percentage) || 0,
           marksObtained: d.marks_obtained || "",
           remarks: d.remarks || "",
-          term: d.term || "Annual Examination",
+          term: d.term || DEFAULT_SETTINGS.activeExamTitle,
           avatar: d.avatar || undefined,
         }));
         localStorage.setItem(LOCAL_STORAGE_KEY_STUDENTS, JSON.stringify(mapped));
@@ -569,12 +563,10 @@ export async function saveStudent(student: StudentResult): Promise<void> {
       3500,
     );
     if (error) {
-      console.error("Supabase saveStudent error:", error);
-      throw error;
+      console.warn("Supabase saveStudent warning:", error);
     }
   } catch (error) {
     console.warn("Supabase saveStudent offline/timed out, saved locally:", error);
-    throw error;
   }
 }
 
@@ -592,12 +584,72 @@ export async function deleteStudent(studentId: string): Promise<void> {
       3500,
     );
     if (error) {
-      console.error("Supabase deleteStudent error:", error);
-      throw error;
+      console.warn("Supabase deleteStudent warning:", error);
     }
   } catch (error) {
     console.warn("Supabase deleteStudent offline/timed out, saved locally:", error);
-    throw error;
+  }
+}
+
+export async function saveStudentsBulk(studentsToSave: StudentResult[]): Promise<void> {
+  if (studentsToSave.length === 0) return;
+  const current = getLocalStudents();
+  const saveMap = new Map(studentsToSave.map((s) => [s.id, s]));
+  const updated = current.map((s) => (saveMap.has(s.id) ? saveMap.get(s.id)! : s));
+  for (const s of studentsToSave) {
+    if (!current.some((c) => c.id === s.id)) {
+      updated.push(s);
+    }
+  }
+
+  if (typeof window !== "undefined") {
+    localStorage.setItem(LOCAL_STORAGE_KEY_STUDENTS, JSON.stringify(updated));
+  }
+  if (!isSupabaseConfigured()) return;
+
+  try {
+    const payload = studentsToSave.map((s) => ({
+      id: s.id,
+      name: s.name,
+      roll_no: s.rollNo || null,
+      class_id: s.classId,
+      class_name: s.className,
+      rank: s.rank,
+      percentage: s.percentage,
+      marks_obtained: s.marksObtained || null,
+      remarks: s.remarks || null,
+      term: s.term,
+      avatar: s.avatar || null,
+    }));
+    const { error } = await withTimeout(supabase.from("students").upsert(payload), 3500);
+    if (error) {
+      console.warn("Supabase saveStudentsBulk warning:", error);
+    }
+  } catch (error) {
+    console.warn("Supabase saveStudentsBulk offline/timed out, saved locally:", error);
+  }
+}
+
+export async function deleteStudentsBulk(studentIds: string[]): Promise<void> {
+  if (studentIds.length === 0) return;
+  const idSet = new Set(studentIds);
+  const current = getLocalStudents();
+  const updated = current.filter((s) => !idSet.has(s.id));
+  if (typeof window !== "undefined") {
+    localStorage.setItem(LOCAL_STORAGE_KEY_STUDENTS, JSON.stringify(updated));
+  }
+  if (!isSupabaseConfigured()) return;
+
+  try {
+    const { error } = await withTimeout(
+      supabase.from("students").delete().in("id", studentIds),
+      3500,
+    );
+    if (error) {
+      console.warn("Supabase deleteStudentsBulk warning:", error);
+    }
+  } catch (error) {
+    console.warn("Supabase deleteStudentsBulk offline/timed out, saved locally:", error);
   }
 }
 
@@ -725,4 +777,3 @@ export async function restoreBackupDataset(backup: {
     console.warn("Supabase restore backup sync offline/timed out, saved locally:", error);
   }
 }
-

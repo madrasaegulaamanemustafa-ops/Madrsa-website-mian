@@ -1,5 +1,7 @@
-import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { Outlet, Link, createRootRoute, HeadContent, Scripts, useRouterState } from "@tanstack/react-router";
 import { LangProvider } from "@/i18n/LangContext";
+import { DuroodPlayer } from "@/components/site/DuroodPlayer";
+import { StickyCTA } from "@/components/site/StickyCTA";
 
 import appCss from "../styles.css?url";
 
@@ -78,9 +80,18 @@ export const Route = createRootRoute({
 });
 
 function RootComponent() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isAdminRoute = pathname.startsWith("/admin");
+
   return (
     <LangProvider>
       <Outlet />
+      {!isAdminRoute && (
+        <>
+          <StickyCTA />
+          <DuroodPlayer />
+        </>
+      )}
     </LangProvider>
   );
 }

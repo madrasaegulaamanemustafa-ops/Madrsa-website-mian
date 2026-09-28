@@ -1,10 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { LangProvider, useLang, WHATSAPP_URL } from "@/i18n/LangContext";
+import { useLang, WHATSAPP_URL } from "@/i18n/LangContext";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
-import { StickyCTA } from "@/components/site/StickyCTA";
-import { DuroodPlayer } from "@/components/site/DuroodPlayer";
 import {
   getStudents,
   getClasses,
@@ -57,8 +55,6 @@ function ResultsPage() {
         <ResultsContent />
       </main>
       <Footer />
-      <StickyCTA />
-      <DuroodPlayer />
     </>
   );
 }
@@ -106,6 +102,47 @@ function ResultsContent() {
     return classes.filter((c) => c.id === selectedClassId);
   }, [classes, selectedClassId]);
 
+  // Compute tied ranks where students with identical percentage share the same rank
+  const computeTiedRanks = (list: StudentResult[]) => {
+    // Sort descending by percentage, then by name
+    const sorted = [...list].sort((a, b) => {
+      const pctA = Number(a.percentage) || 0;
+      const pctB = Number(b.percentage) || 0;
+      if (pctB !== pctA) {
+        return pctB - pctA;
+      }
+      return (a.name || "").localeCompare(b.name || "");
+    });
+
+    // Count frequency of each percentage to identify ties
+    const pctCounts = new Map<number, number>();
+    for (const s of sorted) {
+      const pct = Number(s.percentage) || 0;
+      pctCounts.set(pct, (pctCounts.get(pct) || 0) + 1);
+    }
+
+    let currentRank = 1;
+    let prevPct: number | null = null;
+
+    return sorted.map((s, index) => {
+      const pct = Number(s.percentage) || 0;
+      if (index === 0) {
+        currentRank = 1;
+      } else if (pct !== prevPct) {
+        currentRank = currentRank + 1;
+      }
+
+      prevPct = pct;
+      const isTie = (pctCounts.get(pct) || 0) > 1;
+
+      return {
+        ...s,
+        computedRank: currentRank,
+        isTie,
+      };
+    });
+  };
+
   const getStudentsForClass = (classId: string) => {
     let list = students.filter((s) => s.classId === classId);
 
@@ -113,23 +150,24 @@ function ResultsContent() {
       const q = searchQuery.toLowerCase().trim();
       list = list.filter(
         (s) =>
-          (s.name || "").toLowerCase().includes(q) ||
-          (s.rollNo || "").toLowerCase().includes(q),
+          (s.name || "").toLowerCase().includes(q) || (s.rollNo || "").toLowerCase().includes(q),
       );
     }
 
-    list.sort((a, b) => a.rank - b.rank);
+    const ranked = computeTiedRanks(list);
 
     // Apply display limit if set (> 0) and not searching
     if (settings.displayLimit > 0 && !searchQuery.trim()) {
-      list = list.slice(0, settings.displayLimit);
+      return ranked.slice(0, settings.displayLimit);
     }
 
-    return list;
+    return ranked;
   };
 
-  const handleShareResult = (student: StudentResult) => {
-    const text = `🏆 Mubarakbaad! ${student.name} achieved Rank #${student.rank} (${student.percentage}%) in ${student.className} at Madrasa E Gulaaman E Mustafa ﷺ! Check all results at: ${window.location.origin}/results`;
+  const handleShareResult = (student: StudentResult & { computedRank?: number; isTie?: boolean }) => {
+    const finalRank = student.computedRank ?? student.rank;
+    const tieLabel = student.isTie ? " (Tied)" : "";
+    const text = `🏆 Mubarakbaad! ${student.name} achieved Rank #${finalRank}${tieLabel} (${student.percentage}%) in ${student.className} at Madrasa E Gulaaman E Mustafa ﷺ! Check all results at: ${window.location.origin}/results`;
     const shareUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
     window.open(shareUrl, "_blank");
   };
@@ -230,184 +268,176 @@ function ResultsContent() {
         </div>
       ) : (
         <div className="max-w-6xl mx-auto space-y-16">
-          {filteredClasses.map((cls) => {
-            const classStudents = getStudentsForClass(cls.id);
-            if (classStudents.length === 0 && searchQuery) return null;
+          {filteredClasses.filter((cls) => getStudentsForClass(cls.id).length > 0).length === 0 && searchQuery.trim() ? (
+            <div className="rounded-3xl bg-white border border-emerald-deep/15 p-10 text-center shadow-soft max-w-lg mx-auto animate-fade-up">
+              <div className="h-16 w-16 mx-auto rounded-full bg-emerald-soft text-emerald-deep grid place-items-center mb-4">
+                <Search className="h-8 w-8 text-amber-600" />
+              </div>
+              <h3 className="font-display text-2xl font-bold text-emerald-deep mb-2">No Matching Student Results</h3>
+              <p className="text-xs sm:text-sm text-foreground/70 mb-6">
+                No students found matching <span className="font-bold text-emerald-deep">"{searchQuery.trim()}"</span> in the selected class filter.
+              </p>
+              <button
+                onClick={() => {
+                  setSearchQuery("");
+                  setSelectedClassId("all");
+                }}
+                type="button"
+                className="inline-flex items-center gap-2 rounded-2xl bg-gradient-emerald text-white px-6 py-2.5 text-xs font-bold shadow-soft hover:scale-105 transition-transform cursor-pointer"
+              >
+                <span>Clear Search & Show All</span>
+              </button>
+            </div>
+          ) : (
+            filteredClasses.map((cls) => {
+              const classStudents = getStudentsForClass(cls.id);
+              if (classStudents.length === 0 && searchQuery.trim()) return null;
 
-            const top3 = classStudents.slice(0, 3);
-            const remaining = classStudents.slice(3);
-
-            return (
-              <section key={cls.id} className="relative">
-                {/* Class Title Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b-2 border-gold/30 mb-8">
-                  <div>
-                    <div className="inline-flex items-center gap-2 text-amber-700 text-xs font-black uppercase tracking-widest mb-1">
-                      <GraduationCap className="h-4 w-4 text-amber-600" />
-                      <span>Class Results</span>
+              return (
+                <section key={cls.id} className="relative">
+                  {/* Class Title Header */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b-2 border-gold/30 mb-8">
+                    <div>
+                      <div className="inline-flex items-center gap-2 text-amber-700 text-xs font-black uppercase tracking-widest mb-1">
+                        <GraduationCap className="h-4 w-4 text-amber-600" />
+                        <span>Class Results</span>
+                      </div>
+                      <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-emerald-deep">
+                        {cls.name}
+                      </h2>
                     </div>
-                    <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-emerald-deep">
-                      {cls.name}
-                    </h2>
+                    <div className="text-xs font-bold text-muted-foreground bg-white px-3.5 py-1.5 rounded-full border border-emerald-deep/10 self-start sm:self-auto shadow-subtle">
+                      {classStudents.length} Top Rankers Listed
+                    </div>
                   </div>
-                  <div className="text-xs font-bold text-muted-foreground bg-white px-3.5 py-1.5 rounded-full border border-emerald-deep/10 self-start sm:self-auto shadow-subtle">
-                    {classStudents.length} Top Rankers Listed
-                  </div>
-                </div>
 
-                {classStudents.length === 0 ? (
-                  <div className="rounded-3xl bg-white p-8 text-center border border-emerald-deep/10 text-muted-foreground text-sm font-medium">
-                    No student results found matching your search in this class.
-                  </div>
-                ) : (
-                  <>
-                    {/* Dynamic Podium Layout (1, 2, or 3+ students) */}
-                    {top3.length === 1 && (
-                      <div className="max-w-md mx-auto mb-8">
-                        <PodiumCard
-                          student={top3[0]}
-                          rank={1}
-                          badgeColor="bg-amber-400 text-amber-950 border-amber-300"
-                          ribbonColor="from-amber-500 via-amber-300 to-amber-500"
-                          glowClass="border-amber-400 shadow-gold gold-border-glow"
-                          isCenter={true}
-                          onShare={() => handleShareResult(top3[0])}
-                          showRoll={settings.showRollNumbers}
-                          showPct={settings.showPercentages}
-                        />
-                      </div>
-                    )}
+                  {classStudents.length === 0 ? (
+                    <div className="rounded-3xl bg-white p-8 text-center border border-emerald-deep/10 text-muted-foreground text-sm font-medium">
+                      No student results recorded for this class yet.
+                    </div>
+                  ) : (
+                    <>
+                      {/* Classic 3-Step Podium (Rank 1 Center Elevated, Rank 2 Left, Rank 3 Right) */}
+                      {(() => {
+                        const rank1 = classStudents.filter((s) => s.computedRank === 1);
+                        const rank2 = classStudents.filter((s) => s.computedRank === 2);
+                        const rank3 = classStudents.filter((s) => s.computedRank === 3);
 
-                    {top3.length === 2 && (
-                      <div className="max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                        <PodiumCard
-                          student={top3[0]}
-                          rank={1}
-                          badgeColor="bg-amber-400 text-amber-950 border-amber-300"
-                          ribbonColor="from-amber-500 via-amber-300 to-amber-500"
-                          glowClass="border-amber-400 shadow-gold gold-border-glow"
-                          isCenter={true}
-                          onShare={() => handleShareResult(top3[0])}
-                          showRoll={settings.showRollNumbers}
-                          showPct={settings.showPercentages}
-                        />
-                        <PodiumCard
-                          student={top3[1]}
-                          rank={2}
-                          badgeColor="bg-slate-200 text-slate-800 border-slate-300"
-                          ribbonColor="from-slate-400 to-slate-200"
-                          glowClass="border-slate-300/80 shadow-md"
-                          onShare={() => handleShareResult(top3[1])}
-                          showRoll={settings.showRollNumbers}
-                          showPct={settings.showPercentages}
-                        />
-                      </div>
-                    )}
+                        // If at least one top 3 rank exists
+                        if (rank1.length === 0 && rank2.length === 0 && rank3.length === 0) {
+                          return null;
+                        }
 
-                    {top3.length >= 3 && (
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 items-stretch">
-                        {/* Rank 1 (Gold - 1st on mobile, Center on Desktop) */}
-                        <div className="order-1 md:order-2 md:-translate-y-4">
-                          <PodiumCard
-                            student={top3[0]}
-                            rank={1}
-                            badgeColor="bg-amber-400 text-amber-950 border-amber-300"
-                            ribbonColor="from-amber-500 via-amber-300 to-amber-500"
-                            glowClass="border-amber-400 shadow-gold gold-border-glow"
-                            isCenter={true}
-                            onShare={() => handleShareResult(top3[0])}
-                            showRoll={settings.showRollNumbers}
-                            showPct={settings.showPercentages}
-                          />
-                        </div>
-
-                        {/* Rank 2 (Silver - 2nd on mobile, Left on Desktop) */}
-                        <div className="order-2 md:order-1">
-                          <PodiumCard
-                            student={top3[1]}
-                            rank={2}
-                            badgeColor="bg-slate-200 text-slate-800 border-slate-300"
-                            ribbonColor="from-slate-400 to-slate-200"
-                            glowClass="border-slate-300/80 shadow-md"
-                            onShare={() => handleShareResult(top3[1])}
-                            showRoll={settings.showRollNumbers}
-                            showPct={settings.showPercentages}
-                          />
-                        </div>
-
-                        {/* Rank 3 (Bronze - 3rd on mobile, Right on Desktop) */}
-                        <div className="order-3 md:order-3">
-                          <PodiumCard
-                            student={top3[2]}
-                            rank={3}
-                            badgeColor="bg-amber-700/20 text-amber-900 border-amber-600/30"
-                            ribbonColor="from-amber-700 to-amber-500"
-                            glowClass="border-amber-700/40 shadow-md"
-                            onShare={() => handleShareResult(top3[2])}
-                            showRoll={settings.showRollNumbers}
-                            showPct={settings.showPercentages}
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Rank 4, 5+ List Table */}
-                    {remaining.length > 0 && (
-                      <div className="rounded-3xl bg-white border border-emerald-deep/10 shadow-soft overflow-hidden">
-                        <div className="px-6 py-3.5 bg-emerald-soft/60 border-b border-emerald-deep/10 text-xs font-black text-emerald-deep uppercase tracking-wider flex items-center justify-between">
-                          <span>Honorable Mention Rankers</span>
-                          <span>Marks & Percentage</span>
-                        </div>
-                        <div className="divide-y divide-emerald-deep/10">
-                          {remaining.map((st) => (
-                            <div
-                              key={st.id}
-                              className="px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-emerald-soft/30 transition-colors"
-                            >
-                              <div className="flex items-center gap-4">
-                                <div className="h-8 w-8 rounded-full bg-emerald-deep/10 text-emerald-deep font-extrabold text-xs grid place-items-center shrink-0">
-                                  #{st.rank}
-                                </div>
-                                <div>
-                                  <div className="font-display font-bold text-lg text-emerald-deep">
-                                    {st.name}
-                                  </div>
-                                  {settings.showRollNumbers && st.rollNo && (
-                                    <div className="text-xs font-medium text-foreground/60">
-                                      Roll No: {st.rollNo}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-
-                              <div className="flex items-center gap-4 self-end sm:self-auto">
-                                {settings.showPercentages && (
-                                  <div className="text-right">
-                                    <div className="font-display font-extrabold text-lg text-emerald-deep">
-                                      {st.percentage}%
-                                    </div>
-                                  </div>
-                                )}
-
-                                <button
-                                  onClick={() => handleShareResult(st)}
-                                  type="button"
-                                  title="Share on WhatsApp"
-                                  className="h-8 w-8 rounded-full bg-emerald-soft text-emerald-deep grid place-items-center hover:bg-emerald-deep hover:text-white transition-colors cursor-pointer"
-                                >
-                                  <Share2 className="h-3.5 w-3.5" />
-                                </button>
-                              </div>
+                        return (
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 items-stretch">
+                            {/* 2nd Place (Silver) — Left on Desktop */}
+                            <div className="order-2 md:order-1">
+                              <PodiumSlotCard
+                                rank={2}
+                                students={rank2}
+                                onShare={handleShareResult}
+                                showRoll={settings.showRollNumbers}
+                                showPct={settings.showPercentages}
+                              />
                             </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
-              </section>
-            );
-          })}
+
+                            {/* 1st Place (Gold) — Center Elevated on Desktop */}
+                            <div className="order-1 md:order-2 md:-translate-y-4">
+                              <PodiumSlotCard
+                                rank={1}
+                                isCenter={true}
+                                students={rank1}
+                                onShare={handleShareResult}
+                                showRoll={settings.showRollNumbers}
+                                showPct={settings.showPercentages}
+                              />
+                            </div>
+
+                            {/* 3rd Place (Bronze) — Right on Desktop */}
+                            <div className="order-3 md:order-3">
+                              <PodiumSlotCard
+                                rank={3}
+                                students={rank3}
+                                onShare={handleShareResult}
+                                showRoll={settings.showRollNumbers}
+                                showPct={settings.showPercentages}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })()}
+
+                      {/* Rank 4, 5+ List Table */}
+                      {(() => {
+                        const remaining = classStudents.filter((s) => s.computedRank > 3);
+                        if (remaining.length === 0) return null;
+
+                        return (
+                          <div className="rounded-3xl bg-white border border-emerald-deep/10 shadow-soft overflow-hidden">
+                            <div className="px-6 py-3.5 bg-emerald-soft/60 border-b border-emerald-deep/10 text-xs font-black text-emerald-deep uppercase tracking-wider flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Award className="h-4 w-4 text-emerald-700" />
+                                <span>Honorable Mention Rankers (Ranks 4+)</span>
+                              </div>
+                              <span>Marks & Percentage</span>
+                            </div>
+                            <div className="divide-y divide-emerald-deep/10">
+                              {remaining.map((st) => (
+                                <div
+                                  key={st.id}
+                                  className="px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-emerald-soft/30 transition-colors"
+                                >
+                                  <div className="flex items-center gap-4">
+                                    <div className="h-8 min-w-8 px-2.5 rounded-full bg-emerald-deep/10 text-emerald-deep font-extrabold text-xs grid place-items-center shrink-0">
+                                      <span>#{st.computedRank}</span>
+                                      {st.isTie && (
+                                        <span className="text-[9px] font-bold text-amber-800 ml-1">
+                                          (Tie)
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div>
+                                      <div className="font-display font-bold text-lg text-emerald-deep">
+                                        {st.name}
+                                      </div>
+                                      {settings.showRollNumbers && st.rollNo && (
+                                        <div className="text-xs font-medium text-foreground/60">
+                                          Roll No: {st.rollNo}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center gap-4 self-end sm:self-auto">
+                                    {settings.showPercentages && (
+                                      <div className="text-right">
+                                        <div className="font-display font-extrabold text-lg text-emerald-deep">
+                                          {st.percentage}%
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    <button
+                                      onClick={() => handleShareResult(st)}
+                                      type="button"
+                                      title="Share on WhatsApp"
+                                      className="h-8 w-8 rounded-full bg-emerald-soft text-emerald-deep grid place-items-center hover:bg-emerald-deep hover:text-white transition-colors cursor-pointer"
+                                    >
+                                      <Share2 className="h-3.5 w-3.5" />
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </>
+                  )}
+                </section>
+              );
+            })
+          )}
         </div>
       )}
 
@@ -449,55 +479,165 @@ function ResultsContent() {
   );
 }
 
-// Subcomponent: Top 3 Podium Card
-function PodiumCard({
-  student,
+// Subcomponent: Top Podium Slot Card (handles 1 student or multiple tied students)
+function PodiumSlotCard({
   rank,
-  badgeColor,
-  ribbonColor,
-  glowClass,
+  students,
   isCenter = false,
   onShare,
   showRoll,
   showPct,
 }: {
-  student: StudentResult;
   rank: number;
-  badgeColor: string;
-  ribbonColor: string;
-  glowClass: string;
+  students: (StudentResult & { computedRank?: number; isTie?: boolean })[];
   isCenter?: boolean;
-  onShare: () => void;
+  onShare: (student: StudentResult) => void;
   showRoll: boolean;
   showPct: boolean;
 }) {
-  const medalIcons = {
-    1: <Trophy className="h-6 w-6 text-amber-900" />,
-    2: <Medal className="h-6 w-6 text-slate-800" />,
-    3: <Medal className="h-6 w-6 text-amber-900" />,
+  if (!students || students.length === 0) {
+    return null;
+  }
+
+  const isTie = students.length > 1;
+  const primaryStudent = students[0];
+
+  const getRankConfig = (r: number, tied: boolean) => {
+    switch (r) {
+      case 1:
+        return {
+          icon: <Trophy className="h-5 w-5 text-amber-950" />,
+          title: tied ? "Joint 1st Position — Gold" : "1st Position — Gold",
+          badgeColor: "bg-amber-400 text-amber-950 border-amber-300 shadow-gold",
+          glowClass: "border-amber-400/90 shadow-gold bg-gradient-to-b from-amber-50/40 via-white to-white",
+          avatarBg: "bg-gradient-to-br from-amber-200 to-amber-400 text-amber-950 border-amber-400",
+          pctColor: "text-amber-700",
+        };
+      case 2:
+        return {
+          icon: <Medal className="h-5 w-5 text-slate-900" />,
+          title: tied ? "Joint 2nd Position — Silver" : "2nd Position — Silver",
+          badgeColor: "bg-slate-200 text-slate-900 border-slate-300 shadow-soft",
+          glowClass: "border-slate-300 shadow-md bg-gradient-to-b from-slate-50/50 via-white to-white",
+          avatarBg: "bg-gradient-to-br from-slate-200 to-slate-300 text-slate-900 border-slate-300",
+          pctColor: "text-slate-800",
+        };
+      case 3:
+        return {
+          icon: <Medal className="h-5 w-5 text-amber-950" />,
+          title: tied ? "Joint 3rd Position — Bronze" : "3rd Position — Bronze",
+          badgeColor: "bg-amber-700/20 text-amber-950 border-amber-600/30",
+          glowClass: "border-amber-600/40 shadow-md bg-gradient-to-b from-amber-50/30 via-white to-white",
+          avatarBg: "bg-gradient-to-br from-amber-200/80 to-amber-400/60 text-amber-950 border-amber-600/30",
+          pctColor: "text-amber-900",
+        };
+      default:
+        return {
+          icon: <Award className="h-5 w-5 text-emerald-800" />,
+          title: tied ? `Joint Rank #${r} Distinction` : `Rank #${r} Distinction`,
+          badgeColor: "bg-emerald-deep/10 text-emerald-deep border-emerald-deep/20",
+          glowClass: "border-emerald-deep/20 shadow-soft bg-white",
+          avatarBg: "bg-emerald-soft text-emerald-deep border-emerald-deep/20",
+          pctColor: "text-emerald-deep",
+        };
+    }
   };
 
-  const rankTitles = {
-    1: "1st Position — Gold",
-    2: "2nd Position — Silver",
-    3: "3rd Position — Bronze",
-  };
+  const config = getRankConfig(rank, isTie);
 
+  // Single Student Display (Classic Luxury Card)
+  if (!isTie) {
+    return (
+      <div
+        className={`relative rounded-3xl border-2 ${config.glowClass} p-6 sm:p-7 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] shadow-soft h-full`}
+      >
+        {/* Top Rank Ribbon */}
+        <div className="flex items-center justify-between mb-4">
+          <div
+            className={`inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-wider border ${config.badgeColor}`}
+          >
+            {config.icon}
+            <span>#{rank} Rank</span>
+          </div>
+
+          <button
+            onClick={() => onShare(primaryStudent)}
+            type="button"
+            title="Share on WhatsApp"
+            className="h-8 w-8 rounded-full bg-emerald-soft text-emerald-deep grid place-items-center hover:bg-emerald-deep hover:text-white transition-colors cursor-pointer"
+          >
+            <Share2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
+
+        {/* Student Details */}
+        <div className="text-center my-3">
+          <div
+            className={`h-16 w-16 mx-auto rounded-full border-2 ${config.avatarBg} grid place-items-center mb-3 font-display text-2xl font-black shadow-subtle`}
+          >
+            {primaryStudent.name.charAt(0)}
+          </div>
+
+          <h3 className="font-display text-xl sm:text-2xl font-extrabold text-emerald-deep mb-1 leading-tight">
+            {primaryStudent.name}
+          </h3>
+
+          {showRoll && primaryStudent.rollNo && (
+            <p className="text-xs font-semibold text-foreground/60 mb-2">
+              Roll: <span className="font-mono">{primaryStudent.rollNo}</span>
+            </p>
+          )}
+
+          <div className="inline-block px-3 py-1 rounded-full bg-emerald-soft text-[11px] font-bold text-emerald-deep">
+            {config.title}
+          </div>
+        </div>
+
+        {/* Score and Percentage */}
+        <div className="pt-4 border-t border-emerald-deep/10 flex items-center justify-between">
+          <div className="text-start">
+            <div className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+              Marks Obtained
+            </div>
+            <div className="text-xs font-bold text-emerald-deep">
+              {primaryStudent.marksObtained || "Verified"}
+            </div>
+          </div>
+
+          {showPct && (
+            <div className="text-end">
+              <div className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                Percentage
+              </div>
+              <div className={`font-display text-2xl font-black ${config.pctColor}`}>
+                {primaryStudent.percentage}%
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Multiple Tied Students Display in Single Podium Slot
   return (
     <div
-      className={`relative rounded-3xl bg-white border-2 ${glowClass} p-6 sm:p-7 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] shadow-soft`}
+      className={`relative rounded-3xl border-2 ${config.glowClass} p-6 sm:p-7 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] shadow-soft h-full`}
     >
-      {/* Top Rank Ribbon */}
+      {/* Top Rank Ribbon with Tie Badge */}
       <div className="flex items-center justify-between mb-4">
         <div
-          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider border ${badgeColor}`}
+          className={`inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-wider border ${config.badgeColor}`}
         >
-          {medalIcons[rank as 1 | 2 | 3]}
+          {config.icon}
           <span>#{rank} Rank</span>
+          <span className="text-[10px] uppercase font-black bg-black/15 px-2 py-0.5 rounded-full ml-0.5">
+            {students.length} Tied
+          </span>
         </div>
 
         <button
-          onClick={onShare}
+          onClick={() => onShare(primaryStudent)}
           type="button"
           title="Share on WhatsApp"
           className="h-8 w-8 rounded-full bg-emerald-soft text-emerald-deep grid place-items-center hover:bg-emerald-deep hover:text-white transition-colors cursor-pointer"
@@ -506,35 +646,66 @@ function PodiumCard({
         </button>
       </div>
 
-      {/* Student Details */}
-      <div className="text-center my-3">
-        <div className="h-16 w-16 mx-auto rounded-full bg-gradient-to-br from-emerald-deep/10 to-gold/20 border-2 border-gold/40 grid place-items-center mb-3 text-emerald-deep font-display text-2xl font-black">
-          {student.name.charAt(0)}
+      {/* Tied Students List within Slot */}
+      <div className="my-2 space-y-3">
+        <div className="text-center mb-3">
+          <div className="inline-block px-3 py-0.5 rounded-full bg-emerald-soft text-[11px] font-bold text-emerald-deep">
+            {config.title}
+          </div>
         </div>
 
-        <h3 className="font-display text-xl sm:text-2xl font-extrabold text-emerald-deep mb-1 leading-tight">
-          {student.name}
-        </h3>
+        <div className="space-y-2.5">
+          {students.map((st) => (
+            <div
+              key={st.id}
+              className="flex items-center justify-between p-2.5 rounded-2xl bg-white/80 border border-emerald-deep/10 shadow-subtle hover:bg-emerald-soft/30 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className={`h-9 w-9 rounded-full border ${config.avatarBg} grid place-items-center font-display text-sm font-black shrink-0`}
+                >
+                  {st.name.charAt(0)}
+                </div>
+                <div>
+                  <div className="font-display font-bold text-sm sm:text-base text-emerald-deep leading-snug">
+                    {st.name}
+                  </div>
+                  {showRoll && st.rollNo && (
+                    <div className="text-[11px] font-medium text-foreground/60 font-mono">
+                      {st.rollNo}
+                    </div>
+                  )}
+                </div>
+              </div>
 
-        {showRoll && student.rollNo && (
-          <p className="text-xs font-semibold text-foreground/60 mb-2">
-            Roll: <span className="font-mono">{student.rollNo}</span>
-          </p>
-        )}
-
-        <div className="inline-block px-3 py-1 rounded-full bg-emerald-soft text-[11px] font-bold text-emerald-deep">
-          {rankTitles[rank as 1 | 2 | 3]}
+              <div className="flex items-center gap-2">
+                {showPct && (
+                  <span className={`font-display font-black text-sm ${config.pctColor}`}>
+                    {st.percentage}%
+                  </span>
+                )}
+                <button
+                  onClick={() => onShare(st)}
+                  type="button"
+                  title={`Share ${st.name}'s result`}
+                  className="h-7 w-7 rounded-full bg-emerald-soft text-emerald-deep grid place-items-center hover:bg-emerald-deep hover:text-white transition-colors cursor-pointer"
+                >
+                  <Share2 className="h-3 w-3" />
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Score and Percentage */}
-      <div className="pt-4 border-t border-emerald-deep/10 flex items-center justify-between">
+      {/* Score and Percentage Shared Summary */}
+      <div className="pt-4 border-t border-emerald-deep/10 flex items-center justify-between mt-2">
         <div className="text-start">
           <div className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
-            Marks Obtained
+            Shared Score
           </div>
           <div className="text-xs font-bold text-emerald-deep">
-            {student.marksObtained || "Verified"}
+            {primaryStudent.marksObtained || "Verified"}
           </div>
         </div>
 
@@ -543,8 +714,8 @@ function PodiumCard({
             <div className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
               Percentage
             </div>
-            <div className="font-display text-2xl font-black text-gradient-gold">
-              {student.percentage}%
+            <div className={`font-display text-2xl font-black ${config.pctColor}`}>
+              {primaryStudent.percentage}%
             </div>
           </div>
         )}

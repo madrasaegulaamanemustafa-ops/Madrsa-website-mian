@@ -39,7 +39,7 @@ export function DuroodPlayer() {
           });
       };
 
-      const interactionEvents = ["click", "touchstart", "keydown", "scroll"];
+      const interactionEvents = ["click", "touchstart", "touchend", "keydown"];
 
       const removeInteractionListeners = () => {
         interactionEvents.forEach((event) => {

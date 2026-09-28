@@ -22,6 +22,15 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open]);
+
   return (
     <header
       className={cn(
@@ -38,7 +47,7 @@ export function Navbar() {
             scrolled ? "bg-white/80 backdrop-blur-2xl" : "bg-white/50 backdrop-blur-md",
           )}
         >
-          <a href="/" className="flex items-center gap-2.5 sm:gap-3 group shrink-0">
+          <Link to="/" className="flex items-center gap-2.5 sm:gap-3 group shrink-0">
             <div className="relative h-10 w-10 sm:h-11 sm:w-11 rounded-full grid place-items-center shrink-0 border border-gold/40 shadow-sm overflow-hidden bg-white transition-all duration-500 group-hover:scale-105 group-hover:shadow-gold group-hover:border-gold">
               <img
                 src="/logo.png"
@@ -54,16 +63,16 @@ export function Navbar() {
                 Online Islamic Institute
               </div>
             </div>
-          </a>
+          </Link>
 
           {/* Central Navigation Menu */}
           <nav className="hidden lg:flex items-center gap-1 px-2 py-1.5 rounded-full bg-emerald-deep/[0.04] border border-emerald-deep/[0.06]">
-            <a
-              href="/"
+            <Link
+              to="/"
               className="px-3.5 py-1.5 rounded-full text-[13px] font-semibold text-emerald-950/80 hover:text-emerald-deep hover:bg-white hover:shadow-xs transition-all duration-200"
             >
               {t.nav.home}
-            </a>
+            </Link>
             <Link
               to="/why-us"
               className="px-3.5 py-1.5 rounded-full text-[13px] font-semibold text-emerald-950/80 hover:text-emerald-deep hover:bg-white hover:shadow-xs transition-all duration-200 flex items-center gap-1.5"
@@ -78,30 +87,34 @@ export function Navbar() {
               <span>🏆</span>
               <span>{t.nav.results}</span>
             </Link>
-            <a
-              href="/#offer"
+            <Link
+              to="/"
+              hash="offer"
               className="px-3.5 py-1.5 rounded-full text-[13px] font-semibold text-emerald-950/80 hover:text-emerald-deep hover:bg-white hover:shadow-xs transition-all duration-200"
             >
               {t.nav.offer}
-            </a>
-            <a
-              href="/#courses"
+            </Link>
+            <Link
+              to="/"
+              hash="courses"
               className="px-3.5 py-1.5 rounded-full text-[13px] font-semibold text-emerald-950/80 hover:text-emerald-deep hover:bg-white hover:shadow-xs transition-all duration-200"
             >
               {t.nav.courses}
-            </a>
-            <a
-              href="/#posters"
+            </Link>
+            <Link
+              to="/"
+              hash="posters"
               className="px-3.5 py-1.5 rounded-full text-[13px] font-semibold text-emerald-950/80 hover:text-emerald-deep hover:bg-white hover:shadow-xs transition-all duration-200"
             >
               {t.nav.posters}
-            </a>
-            <a
-              href="/#contact"
+            </Link>
+            <Link
+              to="/"
+              hash="contact"
               className="px-3.5 py-1.5 rounded-full text-[13px] font-semibold text-emerald-950/80 hover:text-emerald-deep hover:bg-white hover:shadow-xs transition-all duration-200"
             >
               {t.nav.contact}
-            </a>
+            </Link>
           </nav>
 
           <div className="flex items-center gap-2.5 shrink-0">
@@ -156,13 +169,13 @@ export function Navbar() {
           )}
         >
           <nav className="flex flex-col gap-2 text-base font-bold text-emerald-deep">
-            <a
+            <Link
               onClick={() => setOpen(false)}
-              href="/"
+              to="/"
               className="py-3 px-4 rounded-xl hover:bg-emerald-deep/5 transition-colors"
             >
               {t.nav.home}
-            </a>
+            </Link>
             <Link
               onClick={() => setOpen(false)}
               to="/why-us"
@@ -186,34 +199,38 @@ export function Navbar() {
                 Top 5
               </span>
             </Link>
-            <a
+            <Link
               onClick={() => setOpen(false)}
-              href="/#offer"
+              to="/"
+              hash="offer"
               className="py-3 px-4 rounded-xl hover:bg-emerald-deep/5 transition-colors"
             >
               {t.nav.offer}
-            </a>
-            <a
+            </Link>
+            <Link
               onClick={() => setOpen(false)}
-              href="/#courses"
+              to="/"
+              hash="courses"
               className="py-3 px-4 rounded-xl hover:bg-emerald-deep/5 transition-colors"
             >
               {t.nav.courses}
-            </a>
-            <a
+            </Link>
+            <Link
               onClick={() => setOpen(false)}
-              href="/#posters"
+              to="/"
+              hash="posters"
               className="py-3 px-4 rounded-xl hover:bg-emerald-deep/5 transition-colors"
             >
               {t.nav.posters}
-            </a>
-            <a
+            </Link>
+            <Link
               onClick={() => setOpen(false)}
-              href="/#contact"
+              to="/"
+              hash="contact"
               className="py-3 px-4 rounded-xl hover:bg-emerald-deep/5 transition-colors"
             >
               {t.nav.contact}
-            </a>
+            </Link>
           </nav>
 
           <a

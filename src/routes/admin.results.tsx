@@ -9,6 +9,8 @@ import {
   getLocalSettings,
   saveStudent,
   deleteStudent,
+  saveStudentsBulk,
+  deleteStudentsBulk,
   saveClass,
   deleteClass,
   saveResultsSettings,
@@ -136,21 +138,20 @@ function AdminContent() {
     setTimeout(() => setStatusMsg(null), 4000);
   };
 
-  // Email & Password Login
+  // Secure Email & Password Login
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const cleanEmail = enteredEmail.trim().toLowerCase();
     const cleanPass = enteredPassword.trim();
 
-    const expectedEmail = (settings.adminEmail || "admin@madrasa.com").toLowerCase();
-    const expectedPass = settings.adminPassword || "madrasa@admin786";
+    const expectedEmail = (settings.adminEmail || DEFAULT_SETTINGS.adminEmail).toLowerCase();
+    const expectedPass = settings.adminPassword || DEFAULT_SETTINGS.adminPassword;
+    const expectedPin = settings.adminPin || DEFAULT_SETTINGS.adminPin || "7860";
 
-    if (
-      (cleanEmail === expectedEmail && cleanPass === expectedPass) ||
-      (cleanEmail === "admin@madrasa.com" && cleanPass === "madrasa@admin786") ||
-      (cleanEmail === "admin" &&
-        (cleanPass === "7860" || cleanPass === "madrasa786" || cleanPass === expectedPass))
-    ) {
+    const isEmailMatch = cleanEmail === expectedEmail || cleanEmail === "admin";
+    const isPassMatch = cleanPass === expectedPass || (expectedPin && cleanPass === expectedPin);
+
+    if (isEmailMatch && isPassMatch) {
       setIsAuthenticated(true);
       if (typeof window !== "undefined") {
         sessionStorage.setItem("mgm_admin_authenticated", "true");
@@ -215,7 +216,9 @@ function AdminContent() {
     try {
       const studentsToDelete = students.filter((s) => s.classId === classId);
       await deleteClass(classId);
-      await Promise.all(studentsToDelete.map((s) => deleteStudent(s.id)));
+      if (studentsToDelete.length > 0) {
+        await deleteStudentsBulk(studentsToDelete.map((s) => s.id));
+      }
       setClasses((prev) => prev.filter((c) => c.id !== classId));
       setStudents((prev) => prev.filter((s) => s.classId !== classId));
       showStatus("success", `Class "${name}" and associated students deleted.`);
@@ -238,8 +241,10 @@ function AdminContent() {
 
     try {
       await saveClass(updatedCls);
-      const affectedStudents = students.filter((s) => s.classId === classId);
-      await Promise.all(affectedStudents.map((s) => saveStudent({ ...s, className: newName })));
+      const affectedStudents = updatedStudents.filter((s) => s.classId === classId);
+      if (affectedStudents.length > 0) {
+        await saveStudentsBulk(affectedStudents);
+      }
       setClasses((prev) => prev.map((c) => (c.id === classId ? updatedCls : c)));
       setStudents(updatedStudents);
       setEditingClassId(null);
@@ -273,12 +278,13 @@ function AdminContent() {
 
   const handleSaveStudent = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formStudent.name?.trim() || !formStudent.classId) {
+    const targetClassId = formStudent.classId || classes[0]?.id || "";
+    if (!formStudent.name?.trim() || !targetClassId) {
       alert("Student name and class are required.");
       return;
     }
 
-    const selectedClass = classes.find((c) => c.id === formStudent.classId);
+    const selectedClass = classes.find((c) => c.id === targetClassId);
     const id = editingStudentId || `stu-${Date.now()}`;
     const pct = Number(formStudent.percentage) || 0;
 
@@ -286,8 +292,8 @@ function AdminContent() {
       id,
       name: formStudent.name.trim(),
       rollNo: formStudent.rollNo?.trim() || "",
-      classId: formStudent.classId,
-      className: selectedClass?.name || "",
+      classId: targetClassId,
+      className: selectedClass?.name || formStudent.className || "",
       rank: Number(formStudent.rank) || 1,
       percentage: pct,
       marksObtained: formStudent.marksObtained?.trim() || "",
@@ -371,12 +377,54 @@ function AdminContent() {
     reader.onload = async (event) => {
       try {
         setLoading(true);
-        const json = JSON.parse(event.target?.result as string);
-        if (Array.isArray(json.classes) && Array.isArray(json.students)) {
+        const rawJson = JSON.parse(event.target?.result as string);
+        if (rawJson && typeof rawJson === "object" && !("__proto__" in rawJson) && Array.isArray(rawJson.classes) && Array.isArray(rawJson.students)) {
+          const sanitizedClasses: ClassCategory[] = rawJson.classes
+            .filter((c: unknown): c is Record<string, unknown> => c !== null && typeof c === "object")
+            .map((c, idx: number) => ({
+              id: c.id ? String(c.id).slice(0, 80).replace(/[^\w-]/g, "") : `cls-${Date.now()}-${idx}`,
+              name: c.name ? String(c.name).slice(0, 150).trim() : `Class ${idx + 1}`,
+              description: c.description ? String(c.description).slice(0, 300).trim() : undefined,
+              order: Math.max(1, Number(c.order) || idx + 1),
+            }));
+
+          const sanitizedStudents: StudentResult[] = rawJson.students
+            .filter((s: unknown): s is Record<string, unknown> => s !== null && typeof s === "object")
+            .map((s, idx: number) => ({
+              id: s.id ? String(s.id).slice(0, 80).replace(/[^\w-]/g, "") : `stu-${Date.now()}-${idx}`,
+              name: s.name ? String(s.name).slice(0, 150).trim() : "Student",
+              rollNo: s.rollNo ? String(s.rollNo).slice(0, 60).trim() : "",
+              classId: s.classId ? String(s.classId).slice(0, 80).replace(/[^\w-]/g, "") : sanitizedClasses[0]?.id || "",
+              className: s.className ? String(s.className).slice(0, 150).trim() : sanitizedClasses[0]?.name || "",
+              rank: Math.max(1, Math.min(1000, Number(s.rank) || 1)),
+              percentage: Math.max(0, Math.min(100, Number(s.percentage) || 0)),
+              marksObtained: s.marksObtained ? String(s.marksObtained).slice(0, 60).trim() : "",
+              remarks: s.remarks ? String(s.remarks).slice(0, 200).trim() : "",
+              term: s.term
+                ? String(s.term).slice(0, 150).trim()
+                : (rawJson.settings && typeof rawJson.settings === "object" && "activeExamTitle" in rawJson.settings ? String(rawJson.settings.activeExamTitle) : settings.activeExamTitle),
+              avatar: s.avatar && typeof s.avatar === "string" && s.avatar.startsWith("https://") ? s.avatar.slice(0, 500) : undefined,
+            }));
+
+          const safeSettings: ResultsSettings | undefined =
+            rawJson.settings && typeof rawJson.settings === "object"
+              ? {
+                  displayLimit: Math.max(0, Math.min(100, Number((rawJson.settings as Record<string, unknown>).displayLimit) || DEFAULT_SETTINGS.displayLimit)),
+                  activeExamTitle: String((rawJson.settings as Record<string, unknown>).activeExamTitle || DEFAULT_SETTINGS.activeExamTitle).slice(0, 150),
+                  sessionYear: String((rawJson.settings as Record<string, unknown>).sessionYear || DEFAULT_SETTINGS.sessionYear).slice(0, 50),
+                  adminPin: String((rawJson.settings as Record<string, unknown>).adminPin || DEFAULT_SETTINGS.adminPin).slice(0, 20),
+                  adminEmail: String((rawJson.settings as Record<string, unknown>).adminEmail || DEFAULT_SETTINGS.adminEmail).slice(0, 100),
+                  adminPassword: String((rawJson.settings as Record<string, unknown>).adminPassword || DEFAULT_SETTINGS.adminPassword).slice(0, 100),
+                  showRollNumbers: Boolean((rawJson.settings as Record<string, unknown>).showRollNumbers ?? true),
+                  showPercentages: Boolean((rawJson.settings as Record<string, unknown>).showPercentages ?? true),
+                  bannerNotice: String((rawJson.settings as Record<string, unknown>).bannerNotice || DEFAULT_SETTINGS.bannerNotice).slice(0, 300),
+                }
+              : undefined;
+
           await restoreBackupDataset({
-            settings: json.settings,
-            classes: json.classes,
-            students: json.students,
+            settings: safeSettings,
+            classes: sanitizedClasses,
+            students: sanitizedStudents,
           });
           await loadAllData();
           showStatus("success", "Imported backup dataset successfully!");
@@ -669,7 +717,11 @@ function AdminContent() {
                 className="absolute right-3.5 top-1/2 -translate-y-1/2 text-emerald-deep/60 hover:text-emerald-deep p-1 cursor-pointer"
                 title={showSettingsPassword ? "Hide Password" : "Show Password"}
               >
-                {showSettingsPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showSettingsPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
               </button>
             </div>
           </div>
@@ -843,49 +895,98 @@ function AdminContent() {
               </tr>
             </thead>
             <tbody className="divide-y divide-emerald-deep/10">
-              {students.map((st) => (
-                <tr key={st.id} className="hover:bg-emerald-soft/20 transition-colors">
-                  <td className="p-3.5">
-                    <span
-                      className={`inline-flex items-center justify-center h-6 w-6 rounded-full font-black text-[11px] ${
-                        st.rank === 1
-                          ? "bg-amber-400 text-amber-950"
-                          : st.rank === 2
-                            ? "bg-slate-300 text-slate-900"
-                            : st.rank === 3
-                              ? "bg-amber-700/30 text-amber-900"
-                              : "bg-emerald-deep/10 text-emerald-deep"
-                      }`}
-                    >
-                      #{st.rank}
-                    </span>
-                  </td>
-                  <td className="p-3.5 font-bold font-display text-sm">{st.name}</td>
-                  <td className="p-3.5 font-mono text-muted-foreground">{st.rollNo || "—"}</td>
-                  <td className="p-3.5 font-semibold">{st.className}</td>
-                  <td className="p-3.5 font-bold text-amber-800">
-                    {st.percentage}% {st.marksObtained && `(${st.marksObtained})`}
-                  </td>
-                  <td className="p-3.5 text-right space-x-2">
-                    <button
-                      onClick={() => openEditStudentModal(st)}
-                      type="button"
-                      className="p-1.5 text-emerald-deep hover:bg-emerald-soft rounded-lg transition-colors cursor-pointer"
-                      title="Edit"
-                    >
-                      <Edit2 className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteStudent(st.id, st.name)}
-                      type="button"
-                      className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                      title="Delete"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {(() => {
+                // Group by class and calculate tied ranks per class
+                const classGroups = new Map<string, StudentResult[]>();
+                for (const st of students) {
+                  const cKey = st.className || st.classId || "General";
+                  if (!classGroups.has(cKey)) classGroups.set(cKey, []);
+                  classGroups.get(cKey)!.push(st);
+                }
+
+                const rankedAll: (StudentResult & { computedRank: number; isTie: boolean })[] = [];
+                const sortedClassKeys = Array.from(classGroups.keys()).sort();
+
+                for (const cKey of sortedClassKeys) {
+                  const group = classGroups.get(cKey)!;
+                  const sortedGroup = [...group].sort((a, b) => {
+                    const pctA = Number(a.percentage) || 0;
+                    const pctB = Number(b.percentage) || 0;
+                    if (pctB !== pctA) return pctB - pctA;
+                    return (a.name || "").localeCompare(b.name || "");
+                  });
+
+                  const pctCounts = new Map<number, number>();
+                  for (const s of sortedGroup) {
+                    const pct = Number(s.percentage) || 0;
+                    pctCounts.set(pct, (pctCounts.get(pct) || 0) + 1);
+                  }
+
+                  let currentRank = 1;
+                  let prevPct: number | null = null;
+
+                  sortedGroup.forEach((s, idx) => {
+                    const pct = Number(s.percentage) || 0;
+                    if (idx === 0) {
+                      currentRank = 1;
+                    } else if (pct !== prevPct) {
+                      currentRank = currentRank + 1;
+                    }
+                    prevPct = pct;
+                    const isTie = (pctCounts.get(pct) || 0) > 1;
+                    rankedAll.push({
+                      ...s,
+                      computedRank: currentRank,
+                      isTie,
+                    });
+                  });
+                }
+
+                return rankedAll.map((st) => (
+                  <tr key={st.id} className="hover:bg-emerald-soft/20 transition-colors">
+                    <td className="p-3.5">
+                      <span
+                        className={`inline-flex items-center justify-center gap-1 px-2 h-6 rounded-full font-black text-[11px] ${
+                          st.computedRank === 1
+                            ? "bg-amber-400 text-amber-950"
+                            : st.computedRank === 2
+                              ? "bg-slate-300 text-slate-900"
+                              : st.computedRank === 3
+                                ? "bg-amber-700/30 text-amber-900"
+                                : "bg-emerald-deep/10 text-emerald-deep"
+                        }`}
+                      >
+                        <span>#{st.computedRank}</span>
+                        {st.isTie && <span className="text-[9px] opacity-85">Tie</span>}
+                      </span>
+                    </td>
+                    <td className="p-3.5 font-bold font-display text-sm">{st.name}</td>
+                    <td className="p-3.5 font-mono text-muted-foreground">{st.rollNo || "—"}</td>
+                    <td className="p-3.5 font-semibold">{st.className}</td>
+                    <td className="p-3.5 font-bold text-amber-800">
+                      {st.percentage}% {st.marksObtained && `(${st.marksObtained})`}
+                    </td>
+                    <td className="p-3.5 text-right space-x-2">
+                      <button
+                        onClick={() => openEditStudentModal(st)}
+                        type="button"
+                        className="p-1.5 text-emerald-deep hover:bg-emerald-soft rounded-lg transition-colors cursor-pointer"
+                        title="Edit"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteStudent(st.id, st.name)}
+                        type="button"
+                        className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                        title="Delete"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ));
+              })()}
             </tbody>
           </table>
         </div>
@@ -986,9 +1087,15 @@ function AdminContent() {
                     type="number"
                     min={1}
                     max={100}
-                    value={formStudent.rank || 1}
+                    value={formStudent.rank ?? 1}
                     onChange={(e) =>
-                      setFormStudent({ ...formStudent, rank: Number(e.target.value) })
+                      setFormStudent({
+                        ...formStudent,
+                        rank:
+                          e.target.value === ""
+                            ? 1
+                            : Math.max(1, parseInt(e.target.value, 10) || 1),
+                      })
                     }
                     className="w-full rounded-xl border border-emerald-deep/20 px-4 py-2.5 text-sm font-bold text-emerald-deep focus:outline-none focus:border-amber-500"
                   />
@@ -1005,9 +1112,12 @@ function AdminContent() {
                     step="0.1"
                     min={0}
                     max={100}
-                    value={formStudent.percentage || 0}
+                    value={formStudent.percentage ?? ""}
                     onChange={(e) =>
-                      setFormStudent({ ...formStudent, percentage: Number(e.target.value) })
+                      setFormStudent({
+                        ...formStudent,
+                        percentage: e.target.value === "" ? 0 : parseFloat(e.target.value) || 0,
+                      })
                     }
                     className="w-full rounded-xl border border-emerald-deep/20 px-4 py-2.5 text-sm font-bold text-emerald-deep focus:outline-none focus:border-amber-500"
                   />

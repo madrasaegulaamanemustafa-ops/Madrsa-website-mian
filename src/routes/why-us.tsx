@@ -1,12 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { LangProvider } from "@/i18n/LangContext";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { useLang } from "@/i18n/LangContext";
 import { Video, Maximize2, X, ChevronLeft, ChevronRight } from "lucide-react";
-import { StickyCTA } from "@/components/site/StickyCTA";
-import { DuroodPlayer } from "@/components/site/DuroodPlayer";
 
 export const Route = createFileRoute("/why-us")({
   head: () => ({
@@ -23,8 +20,6 @@ function WhyUs() {
         <WhyUsContent />
       </main>
       <Footer />
-      <StickyCTA />
-      <DuroodPlayer />
     </>
   );
 }

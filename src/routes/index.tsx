@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { LangProvider } from "@/i18n/LangContext";
 import { Navbar } from "@/components/site/Navbar";
 import { Hero } from "@/components/site/Hero";
 import { Offer } from "@/components/site/Offer";
@@ -11,10 +10,8 @@ import { Posters } from "@/components/site/Posters";
 import { FreeCourse } from "@/components/site/FreeCourse";
 import { Founder } from "@/components/site/Founder";
 import { Footer } from "@/components/site/Footer";
-import { StickyCTA } from "@/components/site/StickyCTA";
 import { AutoPopup } from "@/components/site/AutoPopup";
 import { KidsCourse } from "@/components/site/KidsCourse";
-import { DuroodPlayer } from "@/components/site/DuroodPlayer";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -54,9 +51,7 @@ function Index() {
         <Founder />
       </main>
       <Footer />
-      <StickyCTA />
       <AutoPopup />
-      <DuroodPlayer />
     </>
   );
 }
