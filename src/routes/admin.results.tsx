@@ -440,46 +440,106 @@ function AdminContent() {
       try {
         setLoading(true);
         const rawJson = JSON.parse(event.target?.result as string);
-        if (rawJson && typeof rawJson === "object" && !("__proto__" in rawJson) && Array.isArray(rawJson.classes) && Array.isArray(rawJson.students)) {
+        if (
+          rawJson &&
+          typeof rawJson === "object" &&
+          !("__proto__" in rawJson) &&
+          Array.isArray(rawJson.classes) &&
+          Array.isArray(rawJson.students)
+        ) {
           const sanitizedClasses: ClassCategory[] = rawJson.classes
-            .filter((c: unknown): c is Record<string, unknown> => c !== null && typeof c === "object")
-            .map((c, idx: number) => ({
-              id: c.id ? String(c.id).slice(0, 80).replace(/[^\w-]/g, "") : `cls-${Date.now()}-${idx}`,
+            .filter(
+              (c: unknown): c is Record<string, unknown> => c !== null && typeof c === "object",
+            )
+            .map((c: Record<string, unknown>, idx: number) => ({
+              id: c.id
+                ? String(c.id)
+                    .slice(0, 80)
+                    .replace(/[^\w-]/g, "")
+                : `cls-${Date.now()}-${idx}`,
               name: c.name ? String(c.name).slice(0, 150).trim() : `Class ${idx + 1}`,
               description: c.description ? String(c.description).slice(0, 300).trim() : undefined,
               order: Math.max(1, Number(c.order) || idx + 1),
             }));
 
           const sanitizedStudents: StudentResult[] = rawJson.students
-            .filter((s: unknown): s is Record<string, unknown> => s !== null && typeof s === "object")
-            .map((s, idx: number) => ({
-              id: s.id ? String(s.id).slice(0, 80).replace(/[^\w-]/g, "") : `stu-${Date.now()}-${idx}`,
+            .filter(
+              (s: unknown): s is Record<string, unknown> => s !== null && typeof s === "object",
+            )
+            .map((s: Record<string, unknown>, idx: number) => ({
+              id: s.id
+                ? String(s.id)
+                    .slice(0, 80)
+                    .replace(/[^\w-]/g, "")
+                : `stu-${Date.now()}-${idx}`,
               name: s.name ? String(s.name).slice(0, 150).trim() : "Student",
               rollNo: s.rollNo ? String(s.rollNo).slice(0, 60).trim() : "",
-              classId: s.classId ? String(s.classId).slice(0, 80).replace(/[^\w-]/g, "") : sanitizedClasses[0]?.id || "",
-              className: s.className ? String(s.className).slice(0, 150).trim() : sanitizedClasses[0]?.name || "",
+              classId: s.classId
+                ? String(s.classId)
+                    .slice(0, 80)
+                    .replace(/[^\w-]/g, "")
+                : sanitizedClasses[0]?.id || "",
+              className: s.className
+                ? String(s.className).slice(0, 150).trim()
+                : sanitizedClasses[0]?.name || "",
               rank: Math.max(1, Math.min(1000, Number(s.rank) || 1)),
               percentage: Math.max(0, Math.min(100, Number(s.percentage) || 0)),
               marksObtained: s.marksObtained ? String(s.marksObtained).slice(0, 60).trim() : "",
               remarks: s.remarks ? String(s.remarks).slice(0, 200).trim() : "",
               term: s.term
                 ? String(s.term).slice(0, 150).trim()
-                : (rawJson.settings && typeof rawJson.settings === "object" && "activeExamTitle" in rawJson.settings ? String(rawJson.settings.activeExamTitle) : settings.activeExamTitle),
-              avatar: s.avatar && typeof s.avatar === "string" && s.avatar.startsWith("https://") ? s.avatar.slice(0, 500) : undefined,
+                : rawJson.settings &&
+                    typeof rawJson.settings === "object" &&
+                    "activeExamTitle" in rawJson.settings
+                  ? String(rawJson.settings.activeExamTitle)
+                  : settings.activeExamTitle,
+              avatar:
+                s.avatar && typeof s.avatar === "string" && s.avatar.startsWith("https://")
+                  ? s.avatar.slice(0, 500)
+                  : undefined,
             }));
 
           const safeSettings: ResultsSettings | undefined =
             rawJson.settings && typeof rawJson.settings === "object"
               ? {
-                  displayLimit: Math.max(0, Math.min(100, Number((rawJson.settings as Record<string, unknown>).displayLimit) || DEFAULT_SETTINGS.displayLimit)),
-                  activeExamTitle: String((rawJson.settings as Record<string, unknown>).activeExamTitle || DEFAULT_SETTINGS.activeExamTitle).slice(0, 150),
-                  sessionYear: String((rawJson.settings as Record<string, unknown>).sessionYear || DEFAULT_SETTINGS.sessionYear).slice(0, 50),
-                  adminPin: String((rawJson.settings as Record<string, unknown>).adminPin || DEFAULT_SETTINGS.adminPin).slice(0, 20),
-                  adminEmail: String((rawJson.settings as Record<string, unknown>).adminEmail || DEFAULT_SETTINGS.adminEmail).slice(0, 100),
-                  adminPassword: String((rawJson.settings as Record<string, unknown>).adminPassword || DEFAULT_SETTINGS.adminPassword).slice(0, 100),
-                  showRollNumbers: Boolean((rawJson.settings as Record<string, unknown>).showRollNumbers ?? true),
-                  showPercentages: Boolean((rawJson.settings as Record<string, unknown>).showPercentages ?? true),
-                  bannerNotice: String((rawJson.settings as Record<string, unknown>).bannerNotice || DEFAULT_SETTINGS.bannerNotice).slice(0, 300),
+                  displayLimit: Math.max(
+                    0,
+                    Math.min(
+                      100,
+                      Number((rawJson.settings as Record<string, unknown>).displayLimit) ||
+                        DEFAULT_SETTINGS.displayLimit,
+                    ),
+                  ),
+                  activeExamTitle: String(
+                    (rawJson.settings as Record<string, unknown>).activeExamTitle ||
+                      DEFAULT_SETTINGS.activeExamTitle,
+                  ).slice(0, 150),
+                  sessionYear: String(
+                    (rawJson.settings as Record<string, unknown>).sessionYear ||
+                      DEFAULT_SETTINGS.sessionYear,
+                  ).slice(0, 50),
+                  adminPin: String(
+                    (rawJson.settings as Record<string, unknown>).adminPin ||
+                      DEFAULT_SETTINGS.adminPin,
+                  ).slice(0, 20),
+                  adminEmail: String(
+                    (rawJson.settings as Record<string, unknown>).adminEmail ||
+                      DEFAULT_SETTINGS.adminEmail,
+                  ).slice(0, 100),
+                  adminPassword: String(
+                    (rawJson.settings as Record<string, unknown>).adminPassword ||
+                      DEFAULT_SETTINGS.adminPassword,
+                  ).slice(0, 100),
+                  showRollNumbers: Boolean(
+                    (rawJson.settings as Record<string, unknown>).showRollNumbers ?? true,
+                  ),
+                  showPercentages: Boolean(
+                    (rawJson.settings as Record<string, unknown>).showPercentages ?? true,
+                  ),
+                  bannerNotice: String(
+                    (rawJson.settings as Record<string, unknown>).bannerNotice ||
+                      DEFAULT_SETTINGS.bannerNotice,
+                  ).slice(0, 300),
                 }
               : undefined;
 
@@ -625,7 +685,9 @@ function AdminContent() {
             <span>Authorized Administrator</span>
           </div>
           <h1 className="font-display text-2xl sm:text-4xl font-extrabold text-emerald-deep">
-            {activeAdminTab === "results" ? "Results & Student Management" : "Reviews & Feedback Moderation"}
+            {activeAdminTab === "results"
+              ? "Results & Student Management"
+              : "Reviews & Feedback Moderation"}
           </h1>
         </div>
 
@@ -708,400 +770,405 @@ function AdminContent() {
         <>
           {/* Section 1: Global Display Settings & Session Title */}
           <div className="rounded-3xl bg-white border border-emerald-deep/15 p-6 sm:p-8 shadow-soft mb-10">
-        <div className="flex items-center gap-2.5 text-emerald-deep font-extrabold text-lg mb-6 pb-3 border-b border-emerald-deep/10">
-          <Sliders className="h-5 w-5 text-amber-600" />
-          <span>Results Page Display Settings</span>
-        </div>
+            <div className="flex items-center gap-2.5 text-emerald-deep font-extrabold text-lg mb-6 pb-3 border-b border-emerald-deep/10">
+              <Sliders className="h-5 w-5 text-amber-600" />
+              <span>Results Page Display Settings</span>
+            </div>
 
-        <form onSubmit={handleSaveSettings} className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div>
-            <label className="block text-xs font-black uppercase tracking-wider text-emerald-deep mb-2">
-              Top Students to Display Per Class
-            </label>
-            <select
-              value={settings.displayLimit}
-              onChange={(e) => setSettings({ ...settings, displayLimit: Number(e.target.value) })}
-              className="w-full rounded-2xl border border-emerald-deep/20 px-4 py-3 text-sm font-bold text-emerald-deep focus:outline-none focus:border-amber-500 bg-white"
-            >
-              <option value={3}>Top 3 Students (Podium Only)</option>
-              <option value={5}>Top 5 Students (Recommended)</option>
-              <option value={10}>Top 10 Students</option>
-              <option value={0}>All Ranked Students</option>
-            </select>
-            <p className="text-[11px] text-muted-foreground mt-1.5 font-medium">
-              Controls how many student ranks appear publicly on the Results page.
-            </p>
+            <form onSubmit={handleSaveSettings} className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <label className="block text-xs font-black uppercase tracking-wider text-emerald-deep mb-2">
+                  Top Students to Display Per Class
+                </label>
+                <select
+                  value={settings.displayLimit}
+                  onChange={(e) =>
+                    setSettings({ ...settings, displayLimit: Number(e.target.value) })
+                  }
+                  className="w-full rounded-2xl border border-emerald-deep/20 px-4 py-3 text-sm font-bold text-emerald-deep focus:outline-none focus:border-amber-500 bg-white"
+                >
+                  <option value={3}>Top 3 Students (Podium Only)</option>
+                  <option value={5}>Top 5 Students (Recommended)</option>
+                  <option value={10}>Top 10 Students</option>
+                  <option value={0}>All Ranked Students</option>
+                </select>
+                <p className="text-[11px] text-muted-foreground mt-1.5 font-medium">
+                  Controls how many student ranks appear publicly on the Results page.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-black uppercase tracking-wider text-emerald-deep mb-2">
+                  Active Exam / Term Name
+                </label>
+                <input
+                  type="text"
+                  value={settings.activeExamTitle}
+                  onChange={(e) => setSettings({ ...settings, activeExamTitle: e.target.value })}
+                  placeholder="e.g. Monthly Fatah-E-Battle — 2026"
+                  className="w-full rounded-2xl border border-emerald-deep/20 px-4 py-3 text-sm font-bold text-emerald-deep focus:outline-none focus:border-amber-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-black uppercase tracking-wider text-emerald-deep mb-2">
+                  Academic Session Year
+                </label>
+                <input
+                  type="text"
+                  value={settings.sessionYear}
+                  onChange={(e) => setSettings({ ...settings, sessionYear: e.target.value })}
+                  placeholder="e.g. 2026–27"
+                  className="w-full rounded-2xl border border-emerald-deep/20 px-4 py-3 text-sm font-bold text-emerald-deep focus:outline-none focus:border-amber-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-black uppercase tracking-wider text-emerald-deep mb-2">
+                  Admin Login Email
+                </label>
+                <input
+                  type="email"
+                  value={settings.adminEmail}
+                  onChange={(e) => setSettings({ ...settings, adminEmail: e.target.value })}
+                  placeholder="admin@madrasa.com"
+                  className="w-full rounded-2xl border border-emerald-deep/20 px-4 py-3 text-sm font-bold text-emerald-deep focus:outline-none focus:border-amber-500 font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-black uppercase tracking-wider text-emerald-deep mb-2">
+                  Admin Login Password
+                </label>
+                <div className="relative">
+                  <input
+                    type={showSettingsPassword ? "text" : "password"}
+                    value={settings.adminPassword}
+                    onChange={(e) => setSettings({ ...settings, adminPassword: e.target.value })}
+                    placeholder="madrasa@admin786"
+                    className="w-full rounded-2xl border border-emerald-deep/20 px-4 pr-11 py-3 text-sm font-bold text-emerald-deep focus:outline-none focus:border-amber-500 font-mono"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowSettingsPassword(!showSettingsPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-emerald-deep/60 hover:text-emerald-deep p-1 cursor-pointer"
+                    title={showSettingsPassword ? "Hide Password" : "Show Password"}
+                  >
+                    {showSettingsPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div className="md:col-span-3">
+                <label className="block text-xs font-black uppercase tracking-wider text-emerald-deep mb-2">
+                  Mubarakbaad / Announcement Notice
+                </label>
+                <input
+                  type="text"
+                  value={settings.bannerNotice}
+                  onChange={(e) => setSettings({ ...settings, bannerNotice: e.target.value })}
+                  placeholder="Congratulations message for parents and students"
+                  className="w-full rounded-2xl border border-emerald-deep/20 px-4 py-3 text-sm font-medium text-emerald-deep focus:outline-none focus:border-amber-500"
+                />
+              </div>
+
+              <div className="md:col-span-3 flex justify-end">
+                <button
+                  type="submit"
+                  className="inline-flex items-center gap-2 rounded-2xl bg-gradient-emerald text-white px-7 py-3 font-extrabold text-xs uppercase tracking-widest shadow-luxe hover:scale-105 transition-transform cursor-pointer"
+                >
+                  <Save className="h-4 w-4 text-gold" />
+                  <span>Save Display Configuration</span>
+                </button>
+              </div>
+            </form>
           </div>
 
-          <div>
-            <label className="block text-xs font-black uppercase tracking-wider text-emerald-deep mb-2">
-              Active Exam / Term Name
-            </label>
-            <input
-              type="text"
-              value={settings.activeExamTitle}
-              onChange={(e) => setSettings({ ...settings, activeExamTitle: e.target.value })}
-              placeholder="e.g. Monthly Fatah-E-Battle — 2026"
-              className="w-full rounded-2xl border border-emerald-deep/20 px-4 py-3 text-sm font-bold text-emerald-deep focus:outline-none focus:border-amber-500"
-            />
-          </div>
+          {/* Section 2: Manage Classes */}
+          <div className="rounded-3xl bg-white border border-emerald-deep/15 p-6 sm:p-8 shadow-soft mb-10">
+            <div className="flex items-center justify-between gap-4 pb-4 border-b border-emerald-deep/10 mb-6">
+              <div className="flex items-center gap-2.5 text-emerald-deep font-extrabold text-lg">
+                <FolderPlus className="h-5 w-5 text-amber-600" />
+                <span>Manage Courses & Classes ({classes.length})</span>
+              </div>
 
-          <div>
-            <label className="block text-xs font-black uppercase tracking-wider text-emerald-deep mb-2">
-              Academic Session Year
-            </label>
-            <input
-              type="text"
-              value={settings.sessionYear}
-              onChange={(e) => setSettings({ ...settings, sessionYear: e.target.value })}
-              placeholder="e.g. 2026–27"
-              className="w-full rounded-2xl border border-emerald-deep/20 px-4 py-3 text-sm font-bold text-emerald-deep focus:outline-none focus:border-amber-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-black uppercase tracking-wider text-emerald-deep mb-2">
-              Admin Login Email
-            </label>
-            <input
-              type="email"
-              value={settings.adminEmail}
-              onChange={(e) => setSettings({ ...settings, adminEmail: e.target.value })}
-              placeholder="admin@madrasa.com"
-              className="w-full rounded-2xl border border-emerald-deep/20 px-4 py-3 text-sm font-bold text-emerald-deep focus:outline-none focus:border-amber-500 font-mono"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-black uppercase tracking-wider text-emerald-deep mb-2">
-              Admin Login Password
-            </label>
-            <div className="relative">
-              <input
-                type={showSettingsPassword ? "text" : "password"}
-                value={settings.adminPassword}
-                onChange={(e) => setSettings({ ...settings, adminPassword: e.target.value })}
-                placeholder="madrasa@admin786"
-                className="w-full rounded-2xl border border-emerald-deep/20 px-4 pr-11 py-3 text-sm font-bold text-emerald-deep focus:outline-none focus:border-amber-500 font-mono"
-              />
               <button
+                onClick={() => {
+                  setNewClassName("");
+                  setClassModalOpen(true);
+                }}
                 type="button"
-                onClick={() => setShowSettingsPassword(!showSettingsPassword)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-emerald-deep/60 hover:text-emerald-deep p-1 cursor-pointer"
-                title={showSettingsPassword ? "Hide Password" : "Show Password"}
+                className="inline-flex items-center gap-2 rounded-2xl bg-gradient-gold text-gold-foreground px-5 py-2.5 font-black text-xs uppercase tracking-widest shadow-gold hover:scale-105 active:scale-95 transition-transform cursor-pointer"
               >
-                {showSettingsPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
+                <Plus className="h-4 w-4" />
+                <span>Add Course / Class</span>
               </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {classes.map((cls) => {
+                const stuCount = students.filter((s) => s.classId === cls.id).length;
+                const isEditing = editingClassId === cls.id;
+
+                return (
+                  <div
+                    key={cls.id}
+                    className="rounded-2xl bg-emerald-soft/40 border border-emerald-deep/10 p-4 flex flex-col justify-between"
+                  >
+                    {isEditing ? (
+                      <div className="space-y-2">
+                        <input
+                          type="text"
+                          value={editingClassName}
+                          onChange={(e) => setEditingClassName(e.target.value)}
+                          className="w-full rounded-xl border border-amber-500 px-3 py-1.5 text-xs font-bold text-emerald-deep bg-white"
+                          autoFocus
+                        />
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleUpdateClassName(cls.id)}
+                            type="button"
+                            className="rounded-xl bg-emerald-deep text-white px-3 py-1 text-[11px] font-bold"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={() => setEditingClassId(null)}
+                            type="button"
+                            className="rounded-xl bg-black/10 px-3 py-1 text-[11px] font-bold"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div>
+                          <h3 className="font-display font-bold text-base text-emerald-deep mb-1">
+                            {cls.name}
+                          </h3>
+                          <div className="text-[11px] font-semibold text-foreground/60">
+                            {stuCount} Student Ranks
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-3 mt-2 border-t border-emerald-deep/10">
+                          <button
+                            onClick={() => openAddStudentModal(cls.id)}
+                            type="button"
+                            className="text-[11px] font-black text-amber-700 hover:text-amber-800 flex items-center gap-1 cursor-pointer"
+                          >
+                            <Plus className="h-3 w-3" />
+                            <span>Add Student</span>
+                          </button>
+
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => {
+                                setEditingClassId(cls.id);
+                                setEditingClassName(cls.name);
+                              }}
+                              type="button"
+                              title="Rename Class"
+                              className="p-1 text-foreground/50 hover:text-emerald-deep rounded-md hover:bg-white"
+                            >
+                              <Edit2 className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteClass(cls.id, cls.name)}
+                              type="button"
+                              title="Delete Class"
+                              className="p-1 text-red-500/70 hover:text-red-700 rounded-md hover:bg-red-50"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
 
-          <div className="md:col-span-3">
-            <label className="block text-xs font-black uppercase tracking-wider text-emerald-deep mb-2">
-              Mubarakbaad / Announcement Notice
-            </label>
-            <input
-              type="text"
-              value={settings.bannerNotice}
-              onChange={(e) => setSettings({ ...settings, bannerNotice: e.target.value })}
-              placeholder="Congratulations message for parents and students"
-              className="w-full rounded-2xl border border-emerald-deep/20 px-4 py-3 text-sm font-medium text-emerald-deep focus:outline-none focus:border-amber-500"
-            />
-          </div>
-
-          <div className="md:col-span-3 flex justify-end">
-            <button
-              type="submit"
-              className="inline-flex items-center gap-2 rounded-2xl bg-gradient-emerald text-white px-7 py-3 font-extrabold text-xs uppercase tracking-widest shadow-luxe hover:scale-105 transition-transform cursor-pointer"
-            >
-              <Save className="h-4 w-4 text-gold" />
-              <span>Save Display Configuration</span>
-            </button>
-          </div>
-        </form>
-      </div>
-
-      {/* Section 2: Manage Classes */}
-      <div className="rounded-3xl bg-white border border-emerald-deep/15 p-6 sm:p-8 shadow-soft mb-10">
-        <div className="flex items-center justify-between gap-4 pb-4 border-b border-emerald-deep/10 mb-6">
-          <div className="flex items-center gap-2.5 text-emerald-deep font-extrabold text-lg">
-            <FolderPlus className="h-5 w-5 text-amber-600" />
-            <span>Manage Courses & Classes ({classes.length})</span>
-          </div>
-
-          <button
-            onClick={() => {
-              setNewClassName("");
-              setClassModalOpen(true);
-            }}
-            type="button"
-            className="inline-flex items-center gap-2 rounded-2xl bg-gradient-gold text-gold-foreground px-5 py-2.5 font-black text-xs uppercase tracking-widest shadow-gold hover:scale-105 active:scale-95 transition-transform cursor-pointer"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Add Course / Class</span>
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {classes.map((cls) => {
-            const stuCount = students.filter((s) => s.classId === cls.id).length;
-            const isEditing = editingClassId === cls.id;
-
-            return (
-              <div
-                key={cls.id}
-                className="rounded-2xl bg-emerald-soft/40 border border-emerald-deep/10 p-4 flex flex-col justify-between"
-              >
-                {isEditing ? (
-                  <div className="space-y-2">
-                    <input
-                      type="text"
-                      value={editingClassName}
-                      onChange={(e) => setEditingClassName(e.target.value)}
-                      className="w-full rounded-xl border border-amber-500 px-3 py-1.5 text-xs font-bold text-emerald-deep bg-white"
-                      autoFocus
-                    />
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleUpdateClassName(cls.id)}
-                        type="button"
-                        className="rounded-xl bg-emerald-deep text-white px-3 py-1 text-[11px] font-bold"
-                      >
-                        Save
-                      </button>
-                      <button
-                        onClick={() => setEditingClassId(null)}
-                        type="button"
-                        className="rounded-xl bg-black/10 px-3 py-1 text-[11px] font-bold"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <div>
-                      <h3 className="font-display font-bold text-base text-emerald-deep mb-1">
-                        {cls.name}
-                      </h3>
-                      <div className="text-[11px] font-semibold text-foreground/60">
-                        {stuCount} Student Ranks
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-3 mt-2 border-t border-emerald-deep/10">
-                      <button
-                        onClick={() => openAddStudentModal(cls.id)}
-                        type="button"
-                        className="text-[11px] font-black text-amber-700 hover:text-amber-800 flex items-center gap-1 cursor-pointer"
-                      >
-                        <Plus className="h-3 w-3" />
-                        <span>Add Student</span>
-                      </button>
-
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => {
-                            setEditingClassId(cls.id);
-                            setEditingClassName(cls.name);
-                          }}
-                          type="button"
-                          title="Rename Class"
-                          className="p-1 text-foreground/50 hover:text-emerald-deep rounded-md hover:bg-white"
-                        >
-                          <Edit2 className="h-3.5 w-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteClass(cls.id, cls.name)}
-                          type="button"
-                          title="Delete Class"
-                          className="p-1 text-red-500/70 hover:text-red-700 rounded-md hover:bg-red-50"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  </>
-                )}
+          {/* Section 3: Student Results Directory CRUD */}
+          <div className="rounded-3xl bg-white border border-emerald-deep/15 p-6 sm:p-8 shadow-soft mb-10">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-emerald-deep/10 mb-6">
+              <div>
+                <h2 className="font-display text-2xl font-extrabold text-emerald-deep">
+                  Student Results & Ranks ({students.length})
+                </h2>
+                <p className="text-xs text-foreground/60 font-medium">
+                  Manage student names, roll numbers, percentage scores, and rank positions.
+                </p>
               </div>
-            );
-          })}
-        </div>
-      </div>
 
-      {/* Section 3: Student Results Directory CRUD */}
-      <div className="rounded-3xl bg-white border border-emerald-deep/15 p-6 sm:p-8 shadow-soft mb-10">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-emerald-deep/10 mb-6">
-          <div>
-            <h2 className="font-display text-2xl font-extrabold text-emerald-deep">
-              Student Results & Ranks ({students.length})
-            </h2>
-            <p className="text-xs text-foreground/60 font-medium">
-              Manage student names, roll numbers, percentage scores, and rank positions.
-            </p>
+              <button
+                onClick={() => openAddStudentModal()}
+                type="button"
+                className="inline-flex items-center gap-2 rounded-2xl bg-gradient-gold text-gold-foreground px-6 py-3 font-black text-xs uppercase tracking-widest shadow-gold hover:scale-105 transition-transform cursor-pointer"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Add Student Result</span>
+              </button>
+            </div>
+
+            {/* Students Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs text-emerald-deep">
+                <thead className="bg-emerald-soft/60 uppercase tracking-wider text-[11px] font-black border-b border-emerald-deep/10">
+                  <tr>
+                    <th className="p-3.5">Rank</th>
+                    <th className="p-3.5">Student Name</th>
+                    <th className="p-3.5">Roll No</th>
+                    <th className="p-3.5">Class</th>
+                    <th className="p-3.5">Percentage / Marks</th>
+                    <th className="p-3.5 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-emerald-deep/10">
+                  {(() => {
+                    // Group by class ID and calculate tied ranks per class
+                    const classGroups = new Map<string, StudentResult[]>();
+                    for (const st of students) {
+                      const cKey = st.classId || "General";
+                      if (!classGroups.has(cKey)) classGroups.set(cKey, []);
+                      classGroups.get(cKey)!.push(st);
+                    }
+
+                    const rankedAll: (StudentResult & { computedRank: number; isTie: boolean })[] =
+                      [];
+                    const sortedClassKeys = Array.from(classGroups.keys()).sort();
+
+                    for (const cKey of sortedClassKeys) {
+                      const group = classGroups.get(cKey)!;
+                      const sortedGroup = [...group].sort((a, b) => {
+                        const pctA = Number(a.percentage) || 0;
+                        const pctB = Number(b.percentage) || 0;
+                        if (pctB !== pctA) return pctB - pctA;
+                        return (a.name || "").localeCompare(b.name || "");
+                      });
+
+                      const pctCounts = new Map<number, number>();
+                      for (const s of sortedGroup) {
+                        const pct = Number(s.percentage) || 0;
+                        pctCounts.set(pct, (pctCounts.get(pct) || 0) + 1);
+                      }
+
+                      let currentRank = 1;
+                      let prevPct: number | null = null;
+
+                      sortedGroup.forEach((s, idx) => {
+                        const pct = Number(s.percentage) || 0;
+                        if (idx === 0) {
+                          currentRank = 1;
+                        } else if (pct !== prevPct) {
+                          currentRank = currentRank + 1;
+                        }
+                        prevPct = pct;
+                        const isTie = (pctCounts.get(pct) || 0) > 1;
+                        rankedAll.push({
+                          ...s,
+                          computedRank: currentRank,
+                          isTie,
+                        });
+                      });
+                    }
+
+                    return rankedAll.map((st) => (
+                      <tr key={st.id} className="hover:bg-emerald-soft/20 transition-colors">
+                        <td className="p-3.5">
+                          <span
+                            className={`inline-flex items-center justify-center gap-1 px-2 h-6 rounded-full font-black text-[11px] ${
+                              st.computedRank === 1
+                                ? "bg-amber-400 text-amber-950"
+                                : st.computedRank === 2
+                                  ? "bg-slate-300 text-slate-900"
+                                  : st.computedRank === 3
+                                    ? "bg-amber-700/30 text-amber-900"
+                                    : "bg-emerald-deep/10 text-emerald-deep"
+                            }`}
+                          >
+                            <span>#{st.computedRank}</span>
+                            {st.isTie && <span className="text-[9px] opacity-85">Tie</span>}
+                          </span>
+                        </td>
+                        <td className="p-3.5 font-bold font-display text-sm">{st.name}</td>
+                        <td className="p-3.5 font-mono text-muted-foreground">
+                          {st.rollNo || "—"}
+                        </td>
+                        <td className="p-3.5 font-semibold">{st.className}</td>
+                        <td className="p-3.5 font-bold text-amber-800">
+                          {st.percentage}% {st.marksObtained && `(${st.marksObtained})`}
+                        </td>
+                        <td className="p-3.5 text-right space-x-2">
+                          <button
+                            onClick={() => openEditStudentModal(st)}
+                            type="button"
+                            className="p-1.5 text-emerald-deep hover:bg-emerald-soft rounded-lg transition-colors cursor-pointer"
+                            title="Edit"
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteStudent(st.id, st.name)}
+                            type="button"
+                            className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                            title="Delete"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ));
+                  })()}
+                </tbody>
+              </table>
+            </div>
           </div>
 
-          <button
-            onClick={() => openAddStudentModal()}
-            type="button"
-            className="inline-flex items-center gap-2 rounded-2xl bg-gradient-gold text-gold-foreground px-6 py-3 font-black text-xs uppercase tracking-widest shadow-gold hover:scale-105 transition-transform cursor-pointer"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Add Student Result</span>
-          </button>
-        </div>
+          {/* Section 4: Backup, Import, and Database Sync */}
+          <div className="rounded-3xl bg-white border border-emerald-deep/15 p-6 sm:p-8 shadow-soft">
+            <h3 className="font-display text-lg font-extrabold text-emerald-deep mb-2">
+              Database Backup & Sync
+            </h3>
+            <p className="text-xs text-foreground/60 mb-6 font-medium">
+              Download a full JSON backup of all results or re-sync pre-populated batches directly
+              to your database.
+            </p>
 
-        {/* Students Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-emerald-deep">
-            <thead className="bg-emerald-soft/60 uppercase tracking-wider text-[11px] font-black border-b border-emerald-deep/10">
-              <tr>
-                <th className="p-3.5">Rank</th>
-                <th className="p-3.5">Student Name</th>
-                <th className="p-3.5">Roll No</th>
-                <th className="p-3.5">Class</th>
-                <th className="p-3.5">Percentage / Marks</th>
-                <th className="p-3.5 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-emerald-deep/10">
-              {(() => {
-                // Group by class ID and calculate tied ranks per class
-                const classGroups = new Map<string, StudentResult[]>();
-                for (const st of students) {
-                  const cKey = st.classId || "General";
-                  if (!classGroups.has(cKey)) classGroups.set(cKey, []);
-                  classGroups.get(cKey)!.push(st);
-                }
+            <div className="flex flex-wrap items-center gap-4">
+              <button
+                onClick={handleExportJson}
+                type="button"
+                className="inline-flex items-center gap-2 rounded-2xl bg-white border border-emerald-deep/20 text-emerald-deep px-5 py-2.5 text-xs font-bold hover:bg-emerald-soft transition-colors cursor-pointer shadow-subtle"
+              >
+                <Download className="h-4 w-4 text-amber-600" />
+                <span>Download Backup JSON</span>
+              </button>
 
-                const rankedAll: (StudentResult & { computedRank: number; isTie: boolean })[] = [];
-                const sortedClassKeys = Array.from(classGroups.keys()).sort();
+              <label className="inline-flex items-center gap-2 rounded-2xl bg-white border border-emerald-deep/20 text-emerald-deep px-5 py-2.5 text-xs font-bold hover:bg-emerald-soft transition-colors cursor-pointer shadow-subtle">
+                <Upload className="h-4 w-4 text-emerald-deep" />
+                <span>Restore from JSON</span>
+                <input type="file" accept=".json" onChange={handleImportJson} className="hidden" />
+              </label>
 
-                for (const cKey of sortedClassKeys) {
-                  const group = classGroups.get(cKey)!;
-                  const sortedGroup = [...group].sort((a, b) => {
-                    const pctA = Number(a.percentage) || 0;
-                    const pctB = Number(b.percentage) || 0;
-                    if (pctB !== pctA) return pctB - pctA;
-                    return (a.name || "").localeCompare(b.name || "");
-                  });
-
-                  const pctCounts = new Map<number, number>();
-                  for (const s of sortedGroup) {
-                    const pct = Number(s.percentage) || 0;
-                    pctCounts.set(pct, (pctCounts.get(pct) || 0) + 1);
-                  }
-
-                  let currentRank = 1;
-                  let prevPct: number | null = null;
-
-                  sortedGroup.forEach((s, idx) => {
-                    const pct = Number(s.percentage) || 0;
-                    if (idx === 0) {
-                      currentRank = 1;
-                    } else if (pct !== prevPct) {
-                      currentRank = currentRank + 1;
-                    }
-                    prevPct = pct;
-                    const isTie = (pctCounts.get(pct) || 0) > 1;
-                    rankedAll.push({
-                      ...s,
-                      computedRank: currentRank,
-                      isTie,
-                    });
-                  });
-                }
-
-                return rankedAll.map((st) => (
-                  <tr key={st.id} className="hover:bg-emerald-soft/20 transition-colors">
-                    <td className="p-3.5">
-                      <span
-                        className={`inline-flex items-center justify-center gap-1 px-2 h-6 rounded-full font-black text-[11px] ${
-                          st.computedRank === 1
-                            ? "bg-amber-400 text-amber-950"
-                            : st.computedRank === 2
-                              ? "bg-slate-300 text-slate-900"
-                              : st.computedRank === 3
-                                ? "bg-amber-700/30 text-amber-900"
-                                : "bg-emerald-deep/10 text-emerald-deep"
-                        }`}
-                      >
-                        <span>#{st.computedRank}</span>
-                        {st.isTie && <span className="text-[9px] opacity-85">Tie</span>}
-                      </span>
-                    </td>
-                    <td className="p-3.5 font-bold font-display text-sm">{st.name}</td>
-                    <td className="p-3.5 font-mono text-muted-foreground">{st.rollNo || "—"}</td>
-                    <td className="p-3.5 font-semibold">{st.className}</td>
-                    <td className="p-3.5 font-bold text-amber-800">
-                      {st.percentage}% {st.marksObtained && `(${st.marksObtained})`}
-                    </td>
-                    <td className="p-3.5 text-right space-x-2">
-                      <button
-                        onClick={() => openEditStudentModal(st)}
-                        type="button"
-                        className="p-1.5 text-emerald-deep hover:bg-emerald-soft rounded-lg transition-colors cursor-pointer"
-                        title="Edit"
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteStudent(st.id, st.name)}
-                        type="button"
-                        className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                        title="Delete"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </td>
-                  </tr>
-                ));
-              })()}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Section 4: Backup, Import, and Database Sync */}
-      <div className="rounded-3xl bg-white border border-emerald-deep/15 p-6 sm:p-8 shadow-soft">
-        <h3 className="font-display text-lg font-extrabold text-emerald-deep mb-2">
-          Database Backup & Sync
-        </h3>
-        <p className="text-xs text-foreground/60 mb-6 font-medium">
-          Download a full JSON backup of all results or re-sync pre-populated batches directly to
-          your database.
-        </p>
-
-        <div className="flex flex-wrap items-center gap-4">
-          <button
-            onClick={handleExportJson}
-            type="button"
-            className="inline-flex items-center gap-2 rounded-2xl bg-white border border-emerald-deep/20 text-emerald-deep px-5 py-2.5 text-xs font-bold hover:bg-emerald-soft transition-colors cursor-pointer shadow-subtle"
-          >
-            <Download className="h-4 w-4 text-amber-600" />
-            <span>Download Backup JSON</span>
-          </button>
-
-          <label className="inline-flex items-center gap-2 rounded-2xl bg-white border border-emerald-deep/20 text-emerald-deep px-5 py-2.5 text-xs font-bold hover:bg-emerald-soft transition-colors cursor-pointer shadow-subtle">
-            <Upload className="h-4 w-4 text-emerald-deep" />
-            <span>Restore from JSON</span>
-            <input type="file" accept=".json" onChange={handleImportJson} className="hidden" />
-          </label>
-
-          <button
-            onClick={handleSeedDefaults}
-            type="button"
-            className="inline-flex items-center gap-2 rounded-2xl bg-amber-500/15 border border-amber-400/40 text-amber-900 px-5 py-2.5 text-xs font-extrabold hover:bg-amber-500/25 transition-colors cursor-pointer shadow-subtle ml-auto"
-          >
-            <RefreshCw className="h-4 w-4 text-amber-700" />
-            <span>Reset & Sync Default Batches</span>
-          </button>
-        </div>
-      </div>
-      </>
+              <button
+                onClick={handleSeedDefaults}
+                type="button"
+                className="inline-flex items-center gap-2 rounded-2xl bg-amber-500/15 border border-amber-400/40 text-amber-900 px-5 py-2.5 text-xs font-extrabold hover:bg-amber-500/25 transition-colors cursor-pointer shadow-subtle ml-auto"
+              >
+                <RefreshCw className="h-4 w-4 text-amber-700" />
+                <span>Reset & Sync Default Batches</span>
+              </button>
+            </div>
+          </div>
+        </>
       )}
 
       {/* Active Tab Content: 2. Feedback & Reviews Moderation */}
@@ -1158,7 +1225,8 @@ function AdminContent() {
                   <span>Moderate Public Reviews</span>
                 </h2>
                 <p className="text-xs text-foreground/70 mt-0.5">
-                  Review submitted feedback from students and parents. Delete any inappropriate or spam content.
+                  Review submitted feedback from students and parents. Delete any inappropriate or
+                  spam content.
                 </p>
               </div>
 
@@ -1228,7 +1296,9 @@ function AdminContent() {
             {filteredAdminFeedbacks.length === 0 ? (
               <div className="text-center py-12 border-2 border-dashed border-emerald-deep/15 rounded-2xl">
                 <MessageSquare className="h-10 w-10 text-emerald-deep/30 mx-auto mb-2" />
-                <p className="text-sm font-bold text-emerald-deep">No reviews found matching criteria</p>
+                <p className="text-sm font-bold text-emerald-deep">
+                  No reviews found matching criteria
+                </p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1259,7 +1329,9 @@ function AdminContent() {
                               </>
                             )}
                           </span>
-                          <span className="font-extrabold text-sm text-emerald-deep">{item.name}</span>
+                          <span className="font-extrabold text-sm text-emerald-deep">
+                            {item.name}
+                          </span>
                         </div>
 
                         <div className="flex items-center gap-0.5">
@@ -1276,13 +1348,13 @@ function AdminContent() {
                         </div>
                       </div>
 
-                      <p className="text-xs text-foreground/80 leading-relaxed italic mb-4">
+                      <p dir="auto" className="text-xs text-foreground/85 leading-relaxed mb-4">
                         "{item.message}"
                       </p>
                     </div>
 
                     <div className="pt-3 border-t border-emerald-deep/10 flex items-center justify-between text-[11px] text-foreground/60">
-                      <span>ID: {item.id.slice(0, 12)}</span>
+                      <span>ID: {String(item.id || "").slice(0, 12)}</span>
 
                       <button
                         type="button"

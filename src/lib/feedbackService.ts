@@ -117,24 +117,22 @@ export async function getFeedbacks(): Promise<FeedbackItem[]> {
         3500,
       );
 
-      if (data && data.length > 0 && !error) {
+      if (data && !error && data.length > 0) {
         const mapped: FeedbackItem[] = data.map((d: Record<string, unknown>) => ({
           id: String(d.id),
-          name: String(d.name),
+          name: String(d.name || "Anonymous"),
           role: (d.role === "parent" ? "parent" : "student") as FeedbackRole,
           courseName: String(d.course_name || d.courseName || "General Course"),
           rating: Number(d.rating) || 5,
-          message: String(d.message),
+          message: String(d.message || ""),
           location: d.location ? String(d.location) : undefined,
           createdAt: String(d.created_at || d.createdAt || new Date().toISOString()),
           verified: Boolean(d.verified ?? true),
         }));
 
-        // Merge any local feedback not yet in DB
-        const dbIds = new Set(mapped.map((m) => m.id));
-        const combined = [...mapped, ...local.filter((l) => !dbIds.has(l.id))];
-        localStorage.setItem(LOCAL_STORAGE_KEY_FEEDBACK, JSON.stringify(combined));
-        return combined;
+        // Replace local cache with authoritative database dataset to ensure deleted reviews are removed
+        localStorage.setItem(LOCAL_STORAGE_KEY_FEEDBACK, JSON.stringify(mapped));
+        return mapped;
       }
     } catch (err) {
       console.debug("Feedbacks sync skipped, using cache:", err);
@@ -147,9 +145,14 @@ export async function getFeedbacks(): Promise<FeedbackItem[]> {
 export async function addFeedback(
   feedback: Omit<FeedbackItem, "id" | "createdAt" | "verified">,
 ): Promise<FeedbackItem> {
+  const generatedId =
+    typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID()
+      : `fb-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
   const newFeedback: FeedbackItem = {
     ...feedback,
-    id: `fb-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    id: generatedId,
     createdAt: new Date().toISOString(),
     verified: true,
   };
@@ -195,10 +198,7 @@ export async function deleteFeedback(id: string): Promise<boolean> {
 
   if (isSupabaseConfigured()) {
     try {
-      await withTimeout(
-        supabase.from("feedbacks").delete().eq("id", id),
-        3500,
-      );
+      await withTimeout(supabase.from("feedbacks").delete().eq("id", id), 3500);
     } catch (error) {
       console.warn("Supabase feedback delete offline, deleted locally:", error);
     }

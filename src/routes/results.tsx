@@ -163,7 +163,9 @@ function ResultsContent() {
     return ranked;
   };
 
-  const handleShareResult = (student: StudentResult & { computedRank?: number; isTie?: boolean }) => {
+  const handleShareResult = (
+    student: StudentResult & { computedRank?: number; isTie?: boolean },
+  ) => {
     const finalRank = student.computedRank ?? student.rank;
     const tieLabel = student.isTie ? " (Tied)" : "";
     const text = `🏆 Mubarakbaad! ${student.name} achieved Rank #${finalRank}${tieLabel} (${student.percentage}%) in ${student.className} at Madrasa E Gulaaman E Mustafa ﷺ! Check all results at: ${window.location.origin}/results`;
@@ -267,14 +269,19 @@ function ResultsContent() {
         </div>
       ) : (
         <div className="max-w-6xl mx-auto space-y-16">
-          {filteredClasses.filter((cls) => getStudentsForClass(cls.id).length > 0).length === 0 && searchQuery.trim() ? (
+          {filteredClasses.filter((cls) => getStudentsForClass(cls.id).length > 0).length === 0 &&
+          searchQuery.trim() ? (
             <div className="rounded-3xl bg-white border border-emerald-deep/15 p-10 text-center shadow-soft max-w-lg mx-auto animate-fade-up">
               <div className="h-16 w-16 mx-auto rounded-full bg-emerald-soft text-emerald-deep grid place-items-center mb-4">
                 <Search className="h-8 w-8 text-amber-600" />
               </div>
-              <h3 className="font-display text-2xl font-bold text-emerald-deep mb-2">No Matching Student Results</h3>
+              <h3 className="font-display text-2xl font-bold text-emerald-deep mb-2">
+                No Matching Student Results
+              </h3>
               <p className="text-xs sm:text-sm text-foreground/70 mb-6">
-                No students found matching <span className="font-bold text-emerald-deep">"{searchQuery.trim()}"</span> in the selected class filter.
+                No students found matching{" "}
+                <span className="font-bold text-emerald-deep">"{searchQuery.trim()}"</span> in the
+                selected class filter.
               </p>
               <button
                 onClick={() => {
@@ -508,7 +515,8 @@ function PodiumSlotCard({
           icon: <Trophy className="h-5 w-5 text-amber-950" />,
           title: tied ? "Joint 1st Position — Gold" : "1st Position — Gold",
           badgeColor: "bg-amber-400 text-amber-950 border-amber-300 shadow-gold",
-          glowClass: "border-amber-400/90 shadow-gold bg-gradient-to-b from-amber-50/40 via-white to-white",
+          glowClass:
+            "border-amber-400/90 shadow-gold bg-gradient-to-b from-amber-50/40 via-white to-white",
           avatarBg: "bg-gradient-to-br from-amber-200 to-amber-400 text-amber-950 border-amber-400",
           pctColor: "text-amber-700",
         };
@@ -517,7 +525,8 @@ function PodiumSlotCard({
           icon: <Medal className="h-5 w-5 text-slate-900" />,
           title: tied ? "Joint 2nd Position — Silver" : "2nd Position — Silver",
           badgeColor: "bg-slate-200 text-slate-900 border-slate-300 shadow-soft",
-          glowClass: "border-slate-300 shadow-md bg-gradient-to-b from-slate-50/50 via-white to-white",
+          glowClass:
+            "border-slate-300 shadow-md bg-gradient-to-b from-slate-50/50 via-white to-white",
           avatarBg: "bg-gradient-to-br from-slate-200 to-slate-300 text-slate-900 border-slate-300",
           pctColor: "text-slate-800",
         };
@@ -526,8 +535,10 @@ function PodiumSlotCard({
           icon: <Medal className="h-5 w-5 text-amber-950" />,
           title: tied ? "Joint 3rd Position — Bronze" : "3rd Position — Bronze",
           badgeColor: "bg-amber-700/20 text-amber-950 border-amber-600/30",
-          glowClass: "border-amber-600/40 shadow-md bg-gradient-to-b from-amber-50/30 via-white to-white",
-          avatarBg: "bg-gradient-to-br from-amber-200/80 to-amber-400/60 text-amber-950 border-amber-600/30",
+          glowClass:
+            "border-amber-600/40 shadow-md bg-gradient-to-b from-amber-50/30 via-white to-white",
+          avatarBg:
+            "bg-gradient-to-br from-amber-200/80 to-amber-400/60 text-amber-950 border-amber-600/30",
           pctColor: "text-amber-900",
         };
       default:

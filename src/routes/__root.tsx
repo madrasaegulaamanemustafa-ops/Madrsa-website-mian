@@ -1,4 +1,11 @@
-import { Outlet, Link, createRootRoute, HeadContent, Scripts, useRouterState } from "@tanstack/react-router";
+import {
+  Outlet,
+  Link,
+  createRootRoute,
+  HeadContent,
+  Scripts,
+  useRouterState,
+} from "@tanstack/react-router";
 import { LangProvider } from "@/i18n/LangContext";
 import { DuroodPlayer } from "@/components/site/DuroodPlayer";
 import { StickyCTA } from "@/components/site/StickyCTA";

@@ -96,6 +96,25 @@ function FeedbackContent() {
     loadData();
   }, []);
 
+  // Modal body scroll lock and escape key handler
+  useEffect(() => {
+    if (!modalOpen) return;
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !submitting) {
+        setModalOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalStyle;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [modalOpen, submitting]);
+
   // Filtered feedbacks
   const filteredFeedbacks = useMemo(() => {
     return feedbacks.filter((fb) => {
@@ -117,7 +136,12 @@ function FeedbackContent() {
   // Handle Submit Feedback
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name.trim() || !formData.message.trim()) {
+    if (submitting) return;
+
+    const trimmedName = formData.name.trim();
+    const trimmedMsg = formData.message.trim();
+
+    if (!trimmedName || !trimmedMsg) {
       alert("Please enter your name and feedback message.");
       return;
     }
@@ -125,13 +149,13 @@ function FeedbackContent() {
     try {
       setSubmitting(true);
       const newFb = await addFeedback({
-        name: formData.name.trim(),
+        name: trimmedName,
         role: formData.role,
-        rating: formData.rating,
-        message: formData.message.trim(),
+        rating: Math.max(1, Math.min(5, Number(formData.rating) || 5)),
+        message: trimmedMsg,
       });
 
-      setFeedbacks((prev) => [newFb, ...prev]);
+      setFeedbacks((prev) => [newFb, ...prev.filter((f) => f.id !== newFb.id)]);
       setSubmitSuccess(true);
       setFormData({
         name: "",
@@ -154,16 +178,18 @@ function FeedbackContent() {
 
   const handleShare = (item: FeedbackItem) => {
     const roleTitle = item.role === "student" ? "Student" : "Parent";
-    const text = `⭐ "${item.message}"\n— ${item.name} (${roleTitle}) at Madrasa E Gulaaman E Mustafa ﷺ.\nRead all reviews at: ${window.location.origin}/feedback`;
-    const shareUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
-    window.open(shareUrl, "_blank");
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://madrasaegulaamanemustafa.com";
+    const text = `⭐ "${item.message}"\n— ${item.name} (${roleTitle}) at Madrasa E Gulaaman E Mustafa ﷺ.\nRead all reviews at: ${origin}/feedback`;
+    const shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+    window.open(shareUrl, "_blank", "noopener,noreferrer");
   };
 
   const studentCount = feedbacks.filter((f) => f.role === "student").length;
   const parentCount = feedbacks.filter((f) => f.role === "parent").length;
-  const avgRating = (
-    feedbacks.reduce((acc, f) => acc + (f.rating || 5), 0) / (feedbacks.length || 1)
-  ).toFixed(1);
+  const avgRating =
+    feedbacks.length > 0
+      ? (feedbacks.reduce((acc, f) => acc + (f.rating || 5), 0) / feedbacks.length).toFixed(1)
+      : "5.0";
 
   return (
     <div className="container mx-auto px-4 sm:px-6 max-w-6xl">
@@ -301,11 +327,7 @@ function FeedbackContent() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredFeedbacks.map((item) => (
-            <FeedbackCard
-              key={item.id}
-              item={item}
-              onShare={() => handleShare(item)}
-            />
+            <FeedbackCard key={item.id} item={item} onShare={() => handleShare(item)} />
           ))}
         </div>
       )}
@@ -403,7 +425,9 @@ function FeedbackContent() {
                       required
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder={formData.role === "student" ? "e.g. Zaid Ahmad" : "e.g. Dr. Tariq Siddiqui"}
+                      placeholder={
+                        formData.role === "student" ? "e.g. Zaid Ahmad" : "e.g. Dr. Tariq Siddiqui"
+                      }
                       className="w-full rounded-2xl border border-emerald-deep/20 px-4 py-2.5 text-sm font-medium text-emerald-deep focus:outline-none focus:border-amber-500"
                     />
                   </div>
@@ -512,13 +536,7 @@ function FeedbackContent() {
 }
 
 // Subcomponent: Feedback Card (Public)
-function FeedbackCard({
-  item,
-  onShare,
-}: {
-  item: FeedbackItem;
-  onShare: () => void;
-}) {
+function FeedbackCard({ item, onShare }: { item: FeedbackItem; onShare: () => void }) {
   const isStudent = item.role === "student";
 
   return (
@@ -571,7 +589,7 @@ function FeedbackCard({
         </div>
 
         {/* Review Message */}
-        <p className="text-sm text-foreground/80 font-medium leading-relaxed mb-6 italic">
+        <p dir="auto" className="text-sm text-foreground/85 font-medium leading-relaxed mb-6">
           "{item.message}"
         </p>
       </div>
@@ -586,13 +604,15 @@ function FeedbackCard({
                 : "bg-amber-200/60 text-amber-950 border-amber-400/40"
             }`}
           >
-            {item.name.charAt(0)}
+            {(item.name?.trim() ? item.name.trim().charAt(0) : "U").toUpperCase()}
           </div>
           <div>
-            <div className="font-display font-bold text-base text-emerald-deep leading-tight flex items-center gap-1.5">
-              <span>{item.name}</span>
+            <div dir="auto" className="font-display font-bold text-base text-emerald-deep leading-tight flex items-center gap-1.5">
+              <span>{item.name || "Anonymous"}</span>
               {item.verified && (
-                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" title="Verified Review" />
+                <span title="Verified Review" className="inline-flex">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                </span>
               )}
             </div>
             <div className="text-[11px] font-semibold text-emerald-800/70 leading-tight mt-0.5">
