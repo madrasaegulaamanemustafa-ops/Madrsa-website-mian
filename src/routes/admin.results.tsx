@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   getStudents,
@@ -23,6 +23,13 @@ import {
   DEFAULT_CLASSES,
   DEFAULT_STUDENTS,
 } from "@/lib/resultsService";
+import {
+  getFeedbacks,
+  getLocalFeedbacks,
+  deleteFeedback,
+  FeedbackItem,
+  FeedbackRole,
+} from "@/lib/feedbackService";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import {
   Mail,
@@ -41,6 +48,14 @@ import {
   Upload,
   Eye,
   EyeOff,
+  MessageSquare,
+  Star,
+  Heart,
+  GraduationCap,
+  Users,
+  Shield,
+  AlertTriangle,
+  Search,
 } from "lucide-react";
 
 export const Route = createFileRoute("/admin/results")({
@@ -111,17 +126,31 @@ function AdminContent() {
     marksObtained: "",
   });
 
+  // Active Admin View Tab
+  const [activeAdminTab, setActiveAdminTab] = useState<"results" | "feedback">("results");
+
+  // Feedback Moderation State
+  const [feedbacks, setFeedbacks] = useState<FeedbackItem[]>(() =>
+    typeof window !== "undefined" ? getLocalFeedbacks() : [],
+  );
+  const [feedbackRoleFilter, setFeedbackRoleFilter] = useState<"all" | FeedbackRole>("all");
+  const [feedbackSearch, setFeedbackSearch] = useState<string>("");
+  const [feedbackToDelete, setFeedbackToDelete] = useState<FeedbackItem | null>(null);
+  const [deletingFeedback, setDeletingFeedback] = useState<boolean>(false);
+
   // Fast background data synchronizer (only called after authentication)
   const loadAllData = async () => {
     try {
-      const [stuData, clsData, setDoc] = await Promise.all([
+      const [stuData, clsData, setDoc, fbData] = await Promise.all([
         getStudents(),
         getClasses(),
         getResultsSettings(),
+        getFeedbacks(),
       ]);
       setStudents(stuData);
       setClasses(clsData);
       setSettings(setDoc);
+      setFeedbacks(fbData);
     } catch (e) {
       console.error("Background sync error:", e);
     }
@@ -137,6 +166,39 @@ function AdminContent() {
     setStatusMsg({ type, text });
     setTimeout(() => setStatusMsg(null), 4000);
   };
+
+  // Handle Delete Feedback in Admin Portal
+  const handleDeleteFeedbackConfirm = async () => {
+    if (!feedbackToDelete) return;
+    try {
+      setDeletingFeedback(true);
+      await deleteFeedback(feedbackToDelete.id);
+      setFeedbacks((prev) => prev.filter((f) => f.id !== feedbackToDelete.id));
+      showStatus("success", `Feedback from "${feedbackToDelete.name}" deleted successfully.`);
+      setFeedbackToDelete(null);
+    } catch (err) {
+      console.error("Failed to delete feedback:", err);
+      showStatus("error", "Failed to delete feedback.");
+    } finally {
+      setDeletingFeedback(false);
+    }
+  };
+
+  // Filtered feedbacks for Admin
+  const filteredAdminFeedbacks = useMemo(() => {
+    return feedbacks.filter((fb) => {
+      if (feedbackRoleFilter !== "all" && fb.role !== feedbackRoleFilter) {
+        return false;
+      }
+      if (feedbackSearch.trim()) {
+        const q = feedbackSearch.toLowerCase().trim();
+        const matchesName = (fb.name || "").toLowerCase().includes(q);
+        const matchesMsg = (fb.message || "").toLowerCase().includes(q);
+        return matchesName || matchesMsg;
+      }
+      return true;
+    });
+  }, [feedbacks, feedbackRoleFilter, feedbackSearch]);
 
   // Secure Email & Password Login
   const handleLoginSubmit = (e: React.FormEvent) => {
@@ -556,25 +618,37 @@ function AdminContent() {
   return (
     <div className="container mx-auto px-4 sm:px-6 max-w-6xl">
       {/* Top Bar Navigation */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-emerald-deep/15 mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-emerald-deep/15 mb-6">
         <div>
           <div className="inline-flex items-center gap-1.5 text-xs font-black uppercase text-amber-700 tracking-wider mb-1">
             <Unlock className="h-3.5 w-3.5 text-amber-600" />
             <span>Authorized Administrator</span>
           </div>
-          <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-emerald-deep">
-            Results & Student Management
+          <h1 className="font-display text-2xl sm:text-4xl font-extrabold text-emerald-deep">
+            {activeAdminTab === "results" ? "Results & Student Management" : "Reviews & Feedback Moderation"}
           </h1>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <button
+            onClick={async () => {
+              await loadAllData();
+              showStatus("success", "All data and reviews refreshed from cloud database.");
+            }}
+            type="button"
+            className="inline-flex items-center gap-2 rounded-2xl bg-white text-emerald-deep px-4 py-2.5 text-xs font-extrabold border border-emerald-deep/15 hover:bg-emerald-soft transition-colors cursor-pointer shadow-xs"
+          >
+            <RefreshCw className="h-3.5 w-3.5 text-emerald-700" />
+            <span>Refresh Data</span>
+          </button>
+
           <Link
-            to="/results"
+            to={activeAdminTab === "results" ? "/results" : "/feedback"}
             target="_blank"
             className="inline-flex items-center gap-2 rounded-2xl bg-emerald-soft text-emerald-deep px-4 py-2.5 text-xs font-extrabold border border-emerald-deep/15 hover:bg-emerald-deep hover:text-white transition-colors"
           >
             <Eye className="h-4 w-4" />
-            <span>View Live Results</span>
+            <span>{activeAdminTab === "results" ? "View Live Results" : "View Live Reviews"}</span>
           </Link>
 
           <button
@@ -585,6 +659,34 @@ function AdminContent() {
             Lock Session
           </button>
         </div>
+      </div>
+
+      {/* Admin Module Switcher Tabs (Mobile & Desktop Responsive) */}
+      <div className="w-full grid grid-cols-2 gap-2 mb-6 p-1.5 rounded-2xl bg-emerald-deep/[0.06] border border-emerald-deep/[0.12] max-w-xl">
+        <button
+          type="button"
+          onClick={() => setActiveAdminTab("results")}
+          className={`flex items-center justify-center gap-1.5 sm:gap-2 py-3 px-2 sm:px-4 rounded-xl text-xs sm:text-sm font-black transition-all cursor-pointer ${
+            activeAdminTab === "results"
+              ? "bg-emerald-deep text-white shadow-md scale-[1.01]"
+              : "text-emerald-deep/75 hover:text-emerald-deep hover:bg-white/80"
+          }`}
+        >
+          <span>🏆 Results ({students.length})</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveAdminTab("feedback")}
+          className={`flex items-center justify-center gap-1.5 sm:gap-2 py-3 px-2 sm:px-4 rounded-xl text-xs sm:text-sm font-black transition-all cursor-pointer ${
+            activeAdminTab === "feedback"
+              ? "bg-emerald-deep text-white shadow-md scale-[1.01]"
+              : "text-emerald-deep/75 hover:text-emerald-deep hover:bg-white/80"
+          }`}
+        >
+          <MessageSquare className="h-4 w-4 text-gold shrink-0" />
+          <span>Feedback ({feedbacks.length})</span>
+        </button>
       </div>
 
       {/* Global Status Notification */}
@@ -601,40 +703,11 @@ function AdminContent() {
         </div>
       )}
 
-      {/* Cloud Sync Status Banner */}
-      <div
-        className={`p-4 rounded-2xl mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-bold border ${
-          isSupabaseConfigured()
-            ? "bg-emerald-50 text-emerald-900 border-emerald-200"
-            : "bg-amber-50 text-amber-900 border-amber-300"
-        }`}
-      >
-        <div className="flex items-center gap-2.5">
-          <span
-            className={`h-3 w-3 rounded-full shrink-0 ${
-              isSupabaseConfigured() ? "bg-emerald-500 animate-pulse" : "bg-amber-500"
-            }`}
-          />
-          <span>
-            {isSupabaseConfigured()
-              ? "Cloud Database Connected: All edits automatically sync across all mobile devices & browsers in real time."
-              : "⚠️ Offline Local Mode: Supabase API credentials are not set in .env. Changes are saved ONLY to this browser and will not appear on other devices until VITE_SUPABASE_ANON_KEY is configured."}
-          </span>
-        </div>
-        {isSupabaseConfigured() && (
-          <button
-            onClick={loadAllData}
-            type="button"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-700 text-white rounded-xl hover:bg-emerald-800 transition-colors self-start sm:self-auto cursor-pointer"
-          >
-            <RefreshCw className="h-3.5 w-3.5" />
-            <span>Force Sync Cloud</span>
-          </button>
-        )}
-      </div>
-
-      {/* Section 1: Global Display Settings & Session Title */}
-      <div className="rounded-3xl bg-white border border-emerald-deep/15 p-6 sm:p-8 shadow-soft mb-10">
+      {/* Active Tab Content: 1. Results & Students Management */}
+      {activeAdminTab === "results" && (
+        <>
+          {/* Section 1: Global Display Settings & Session Title */}
+          <div className="rounded-3xl bg-white border border-emerald-deep/15 p-6 sm:p-8 shadow-soft mb-10">
         <div className="flex items-center gap-2.5 text-emerald-deep font-extrabold text-lg mb-6 pb-3 border-b border-emerald-deep/10">
           <Sliders className="h-5 w-5 text-amber-600" />
           <span>Results Page Display Settings</span>
@@ -1028,6 +1101,205 @@ function AdminContent() {
           </button>
         </div>
       </div>
+      </>
+      )}
+
+      {/* Active Tab Content: 2. Feedback & Reviews Moderation */}
+      {activeAdminTab === "feedback" && (
+        <div className="space-y-8 animate-fade-up">
+          {/* Top Metrics Row */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="p-5 rounded-3xl bg-white border border-emerald-deep/15 shadow-soft">
+              <div className="text-[11px] font-black uppercase tracking-wider text-emerald-deep/60 mb-1">
+                Total Reviews
+              </div>
+              <div className="text-3xl font-black text-emerald-deep">{feedbacks.length}</div>
+            </div>
+
+            <div className="p-5 rounded-3xl bg-white border border-emerald-deep/15 shadow-soft">
+              <div className="text-[11px] font-black uppercase tracking-wider text-emerald-deep/60 mb-1">
+                Student Reviews
+              </div>
+              <div className="text-3xl font-black text-emerald-700">
+                {feedbacks.filter((f) => f.role === "student").length}
+              </div>
+            </div>
+
+            <div className="p-5 rounded-3xl bg-white border border-emerald-deep/15 shadow-soft">
+              <div className="text-[11px] font-black uppercase tracking-wider text-emerald-deep/60 mb-1">
+                Parent Reviews
+              </div>
+              <div className="text-3xl font-black text-amber-700">
+                {feedbacks.filter((f) => f.role === "parent").length}
+              </div>
+            </div>
+
+            <div className="p-5 rounded-3xl bg-white border border-emerald-deep/15 shadow-soft">
+              <div className="text-[11px] font-black uppercase tracking-wider text-emerald-deep/60 mb-1">
+                Avg Rating
+              </div>
+              <div className="text-3xl font-black text-amber-600 flex items-center gap-1">
+                <span>
+                  {(
+                    feedbacks.reduce((acc, f) => acc + (f.rating || 5), 0) / (feedbacks.length || 1)
+                  ).toFixed(1)}
+                </span>
+                <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
+              </div>
+            </div>
+          </div>
+
+          {/* Feedback Moderation Controls & Search */}
+          <div className="rounded-3xl bg-white border border-emerald-deep/15 p-6 sm:p-8 shadow-soft">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-emerald-deep/10">
+              <div>
+                <h2 className="font-display text-xl font-extrabold text-emerald-deep flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-amber-600" />
+                  <span>Moderate Public Reviews</span>
+                </h2>
+                <p className="text-xs text-foreground/70 mt-0.5">
+                  Review submitted feedback from students and parents. Delete any inappropriate or spam content.
+                </p>
+              </div>
+
+              <button
+                onClick={loadAllData}
+                type="button"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-soft text-emerald-deep text-xs font-bold hover:bg-emerald-100 transition-colors self-start sm:self-auto cursor-pointer"
+              >
+                <RefreshCw className="h-3.5 w-3.5" />
+                <span>Refresh Reviews</span>
+              </button>
+            </div>
+
+            {/* Filter and Search Bar */}
+            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 mb-6">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setFeedbackRoleFilter("all")}
+                  className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+                    feedbackRoleFilter === "all"
+                      ? "bg-emerald-deep text-white shadow-soft"
+                      : "bg-emerald-soft/50 text-emerald-deep hover:bg-emerald-soft"
+                  }`}
+                >
+                  All ({feedbacks.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFeedbackRoleFilter("student")}
+                  className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    feedbackRoleFilter === "student"
+                      ? "bg-emerald-deep text-white shadow-soft"
+                      : "bg-emerald-soft/50 text-emerald-deep hover:bg-emerald-soft"
+                  }`}
+                >
+                  <GraduationCap className="h-3.5 w-3.5" />
+                  <span>Students ({feedbacks.filter((f) => f.role === "student").length})</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFeedbackRoleFilter("parent")}
+                  className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    feedbackRoleFilter === "parent"
+                      ? "bg-emerald-deep text-white shadow-soft"
+                      : "bg-emerald-soft/50 text-emerald-deep hover:bg-emerald-soft"
+                  }`}
+                >
+                  <Heart className="h-3.5 w-3.5" />
+                  <span>Parents ({feedbacks.filter((f) => f.role === "parent").length})</span>
+                </button>
+              </div>
+
+              <div className="relative flex-1 max-w-xs">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-deep/50" />
+                <input
+                  type="text"
+                  value={feedbackSearch}
+                  onChange={(e) => setFeedbackSearch(e.target.value)}
+                  placeholder="Search reviewer or message..."
+                  className="w-full pl-9 pr-4 py-2 rounded-xl border border-emerald-deep/20 text-xs font-semibold focus:outline-none focus:border-amber-500 bg-white"
+                />
+              </div>
+            </div>
+
+            {/* Feedbacks Moderation Cards Grid */}
+            {filteredAdminFeedbacks.length === 0 ? (
+              <div className="text-center py-12 border-2 border-dashed border-emerald-deep/15 rounded-2xl">
+                <MessageSquare className="h-10 w-10 text-emerald-deep/30 mx-auto mb-2" />
+                <p className="text-sm font-bold text-emerald-deep">No reviews found matching criteria</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {filteredAdminFeedbacks.map((item) => (
+                  <div
+                    key={item.id}
+                    className="p-5 rounded-2xl bg-white border border-emerald-deep/12 shadow-soft hover:shadow-md transition-shadow flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-2 mb-3">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                              item.role === "student"
+                                ? "bg-emerald-100 text-emerald-900 border border-emerald-200"
+                                : "bg-amber-100 text-amber-950 border border-amber-200"
+                            }`}
+                          >
+                            {item.role === "student" ? (
+                              <>
+                                <GraduationCap className="h-3 w-3" />
+                                <span>Student</span>
+                              </>
+                            ) : (
+                              <>
+                                <Heart className="h-3 w-3" />
+                                <span>Parent</span>
+                              </>
+                            )}
+                          </span>
+                          <span className="font-extrabold text-sm text-emerald-deep">{item.name}</span>
+                        </div>
+
+                        <div className="flex items-center gap-0.5">
+                          {Array.from({ length: 5 }).map((_, idx) => (
+                            <Star
+                              key={idx}
+                              className={`h-3.5 w-3.5 ${
+                                idx < item.rating
+                                  ? "fill-amber-400 text-amber-400"
+                                  : "fill-slate-200 text-slate-200"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+
+                      <p className="text-xs text-foreground/80 leading-relaxed italic mb-4">
+                        "{item.message}"
+                      </p>
+                    </div>
+
+                    <div className="pt-3 border-t border-emerald-deep/10 flex items-center justify-between text-[11px] text-foreground/60">
+                      <span>ID: {item.id.slice(0, 12)}</span>
+
+                      <button
+                        type="button"
+                        onClick={() => setFeedbackToDelete(item)}
+                        className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-red-50 text-red-700 hover:bg-red-600 hover:text-white font-bold transition-colors cursor-pointer border border-red-200"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        <span>Delete Review</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Modal: Add/Edit Student */}
       {studentModalOpen && (
@@ -1222,6 +1494,66 @@ function AdminContent() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Feedback Confirmation Modal Popup */}
+      {feedbackToDelete && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 grid place-items-center p-4 bg-black/65 backdrop-blur-sm animate-fade-up"
+          onClick={() => !deletingFeedback && setFeedbackToDelete(null)}
+        >
+          <div
+            className="relative max-w-md w-full rounded-3xl bg-white p-6 sm:p-8 shadow-2xl border border-red-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-center mb-6">
+              <div className="h-14 w-14 mx-auto rounded-2xl bg-red-100 text-red-600 grid place-items-center mb-3">
+                <Trash2 className="h-7 w-7" />
+              </div>
+              <h3 className="font-display text-2xl font-extrabold text-red-950">
+                Delete Feedback?
+              </h3>
+              <p className="text-xs text-foreground/75 mt-1">
+                Are you sure you want to permanently remove this review from the public website?
+              </p>
+            </div>
+
+            <div className="rounded-2xl bg-red-50/70 border border-red-100 p-4 mb-6 text-left">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="font-bold text-xs text-red-950">{feedbackToDelete.name}</span>
+                <span className="text-[10px] uppercase font-extrabold px-2 py-0.5 rounded-full bg-red-200 text-red-900">
+                  {feedbackToDelete.role}
+                </span>
+              </div>
+              <p className="text-xs text-foreground/80 italic line-clamp-3">
+                "{feedbackToDelete.message}"
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                disabled={deletingFeedback}
+                onClick={() => setFeedbackToDelete(null)}
+                className="rounded-xl border border-foreground/20 text-foreground/80 py-2.5 text-xs font-bold hover:bg-slate-50 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                disabled={deletingFeedback}
+                onClick={handleDeleteFeedbackConfirm}
+                className="rounded-xl bg-red-600 text-white py-2.5 text-xs font-extrabold hover:bg-red-700 transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
+              >
+                <Trash2 className="h-4 w-4" />
+                <span>{deletingFeedback ? "Deleting..." : "Yes, Delete"}</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

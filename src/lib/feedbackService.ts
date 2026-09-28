@@ -184,3 +184,25 @@ export async function addFeedback(
 
   return newFeedback;
 }
+
+export async function deleteFeedback(id: string): Promise<boolean> {
+  const current = getLocalFeedbacks();
+  const updated = current.filter((f) => f.id !== id);
+
+  if (typeof window !== "undefined") {
+    localStorage.setItem(LOCAL_STORAGE_KEY_FEEDBACK, JSON.stringify(updated));
+  }
+
+  if (isSupabaseConfigured()) {
+    try {
+      await withTimeout(
+        supabase.from("feedbacks").delete().eq("id", id),
+        3500,
+      );
+    } catch (error) {
+      console.warn("Supabase feedback delete offline, deleted locally:", error);
+    }
+  }
+
+  return true;
+}

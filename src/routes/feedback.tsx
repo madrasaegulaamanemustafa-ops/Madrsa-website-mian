@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { useLang, WHATSAPP_URL } from "@/i18n/LangContext";
@@ -20,12 +20,10 @@ import {
   Sparkles,
   Search,
   Share2,
-  Filter,
   ArrowRight,
   Send,
   X,
   ShieldCheck,
-  Building,
 } from "lucide-react";
 
 export const Route = createFileRoute("/feedback")({
@@ -303,12 +301,16 @@ function FeedbackContent() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredFeedbacks.map((item) => (
-            <FeedbackCard key={item.id} item={item} onShare={() => handleShare(item)} />
+            <FeedbackCard
+              key={item.id}
+              item={item}
+              onShare={() => handleShare(item)}
+            />
           ))}
         </div>
       )}
 
-      {/* Add Feedback Modal (No Sign-in Required) */}
+      {/* Add Feedback Modal (Public - No Sign-in Required) */}
       {modalOpen && (
         <div
           role="dialog"
@@ -509,7 +511,7 @@ function FeedbackContent() {
   );
 }
 
-// Subcomponent: Feedback Card
+// Subcomponent: Feedback Card (Public)
 function FeedbackCard({
   item,
   onShare,
@@ -520,7 +522,7 @@ function FeedbackCard({
   const isStudent = item.role === "student";
 
   return (
-    <div className="rounded-3xl bg-white border border-emerald-deep/12 p-6 sm:p-7 flex flex-col justify-between shadow-soft hover:shadow-luxe hover:scale-[1.02] transition-all duration-300">
+    <div className="rounded-3xl bg-white p-6 sm:p-7 flex flex-col justify-between shadow-soft hover:shadow-luxe hover:scale-[1.02] transition-all duration-300 border border-emerald-deep/12">
       <div>
         {/* Header with Role Badge and Share */}
         <div className="flex items-center justify-between mb-4">
