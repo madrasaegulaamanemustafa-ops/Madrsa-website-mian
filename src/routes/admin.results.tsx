@@ -896,10 +896,10 @@ function AdminContent() {
             </thead>
             <tbody className="divide-y divide-emerald-deep/10">
               {(() => {
-                // Group by class and calculate tied ranks per class
+                // Group by class ID and calculate tied ranks per class
                 const classGroups = new Map<string, StudentResult[]>();
                 for (const st of students) {
-                  const cKey = st.className || st.classId || "General";
+                  const cKey = st.classId || "General";
                   if (!classGroups.has(cKey)) classGroups.set(cKey, []);
                   classGroups.get(cKey)!.push(st);
                 }

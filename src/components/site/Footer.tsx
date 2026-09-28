@@ -142,13 +142,21 @@ export function Footer() {
             © {new Date().getFullYear()} {t.brand}. {t.footer.rights}
           </div>
 
-          <div className="flex items-center gap-5">
+          <div className="flex flex-wrap items-center gap-5">
             <Link
               to="/results"
               className="hover:text-emerald-deep font-bold flex items-center gap-1.5 transition-colors"
             >
               <Trophy className="h-3.5 w-3.5 text-amber-600" />
               <span>Student Results</span>
+            </Link>
+
+            <Link
+              to="/feedback"
+              className="hover:text-emerald-deep font-bold flex items-center gap-1.5 transition-colors"
+            >
+              <MessageCircle className="h-3.5 w-3.5 text-emerald-600" />
+              <span>Reviews & Feedback</span>
             </Link>
 
             <Link
