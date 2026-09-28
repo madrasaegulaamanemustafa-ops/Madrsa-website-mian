@@ -95,7 +95,6 @@ function AdminContent() {
   const [enteredPassword, setEnteredPassword] = useState<string>("");
   const [loginError, setLoginError] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [showSettingsPassword, setShowSettingsPassword] = useState<boolean>(false);
 
   const [students, setStudents] = useState<StudentResult[]>(() =>
     typeof window !== "undefined" ? getLocalStudents() : DEFAULT_STUDENTS,
@@ -542,18 +541,6 @@ function AdminContent() {
                     (rawJson.settings as Record<string, unknown>).sessionYear ||
                       DEFAULT_SETTINGS.sessionYear,
                   ).slice(0, 50),
-                  adminPin: String(
-                    (rawJson.settings as Record<string, unknown>).adminPin ||
-                      DEFAULT_SETTINGS.adminPin,
-                  ).slice(0, 20),
-                  adminEmail: String(
-                    (rawJson.settings as Record<string, unknown>).adminEmail ||
-                      DEFAULT_SETTINGS.adminEmail,
-                  ).slice(0, 100),
-                  adminPassword: String(
-                    (rawJson.settings as Record<string, unknown>).adminPassword ||
-                      DEFAULT_SETTINGS.adminPassword,
-                  ).slice(0, 100),
                   showRollNumbers: Boolean(
                     (rawJson.settings as Record<string, unknown>).showRollNumbers ?? true,
                   ),
@@ -845,46 +832,6 @@ function AdminContent() {
                   placeholder="e.g. 2026–27"
                   className="w-full rounded-2xl border border-emerald-deep/20 px-4 py-3 text-sm font-bold text-emerald-deep focus:outline-none focus:border-amber-500"
                 />
-              </div>
-
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-emerald-deep mb-2">
-                  Admin Login Email
-                </label>
-                <input
-                  type="email"
-                  value={settings.adminEmail}
-                  onChange={(e) => setSettings({ ...settings, adminEmail: e.target.value })}
-                  placeholder="admin@madrasa.com"
-                  className="w-full rounded-2xl border border-emerald-deep/20 px-4 py-3 text-sm font-bold text-emerald-deep focus:outline-none focus:border-amber-500 font-mono"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-emerald-deep mb-2">
-                  Admin Login Password
-                </label>
-                <div className="relative">
-                  <input
-                    type={showSettingsPassword ? "text" : "password"}
-                    value={settings.adminPassword}
-                    onChange={(e) => setSettings({ ...settings, adminPassword: e.target.value })}
-                    placeholder="madrasa@admin786"
-                    className="w-full rounded-2xl border border-emerald-deep/20 px-4 pr-11 py-3 text-sm font-bold text-emerald-deep focus:outline-none focus:border-amber-500 font-mono"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowSettingsPassword(!showSettingsPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-emerald-deep/60 hover:text-emerald-deep p-1 cursor-pointer"
-                    title={showSettingsPassword ? "Hide Password" : "Show Password"}
-                  >
-                    {showSettingsPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </button>
-                </div>
               </div>
 
               <div className="md:col-span-3">

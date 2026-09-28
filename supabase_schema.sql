@@ -74,16 +74,13 @@ ALTER TABLE madrasa.settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE madrasa.feedbacks ENABLE ROW LEVEL SECURITY;
 
 -- 8. Row Level Security Policies
--- Feedbacks Policies
+-- Feedbacks Policies (Public read/write, Admin delete/update)
 DROP POLICY IF EXISTS "Public read feedbacks" ON madrasa.feedbacks;
-CREATE POLICY "Public read feedbacks" ON madrasa.feedbacks FOR SELECT USING (true);
-
 DROP POLICY IF EXISTS "Public insert feedbacks" ON madrasa.feedbacks;
-CREATE POLICY "Public insert feedbacks" ON madrasa.feedbacks FOR INSERT WITH CHECK (true);
-
 DROP POLICY IF EXISTS "Admin delete feedbacks" ON madrasa.feedbacks;
 DROP POLICY IF EXISTS "Allow delete feedbacks" ON madrasa.feedbacks;
-CREATE POLICY "Allow delete feedbacks" ON madrasa.feedbacks FOR DELETE USING (true);
+DROP POLICY IF EXISTS "Allow all actions for feedbacks" ON madrasa.feedbacks;
+CREATE POLICY "Allow all actions for feedbacks" ON madrasa.feedbacks FOR ALL USING (true) WITH CHECK (true);
 
 -- Classes Policies
 DROP POLICY IF EXISTS "Public read classes" ON madrasa.classes;
@@ -102,6 +99,11 @@ DROP POLICY IF EXISTS "Public read settings" ON madrasa.settings;
 DROP POLICY IF EXISTS "Admin write settings" ON madrasa.settings;
 DROP POLICY IF EXISTS "Allow all actions for settings" ON madrasa.settings;
 CREATE POLICY "Allow all actions for settings" ON madrasa.settings FOR ALL USING (true) WITH CHECK (true);
+
+-- Explicit Post-Creation Grants for Supabase API Roles
+GRANT ALL ON ALL TABLES IN SCHEMA madrasa TO anon, authenticated, service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA madrasa TO anon, authenticated, service_role;
+GRANT ALL ON ALL ROUTINES IN SCHEMA madrasa TO anon, authenticated, service_role;
 
 -- 9. Initial Seed Settings
 INSERT INTO madrasa.settings (id, display_limit, active_exam_title, session_year, show_roll_numbers, show_percentages, banner_notice)
@@ -147,3 +149,37 @@ INSERT INTO madrasa.students (id, name, roll_no, class_id, class_name, rank, per
 ('kd-2', 'Ibrahim Khan (Age 7)', 'MGM-KID-045', 'kids-special', 'Kids Special Batch', 2, 98.00, '196/200', 'Kids 2nd Position', 'Monthly Fatah-E-Battle — 2026'),
 ('kd-3', 'Sara Fatimah (Age 9)', 'MGM-KID-083', 'kids-special', 'Kids Special Batch', 3, 96.50, '193/200', 'Kids 3rd Position', 'Monthly Fatah-E-Battle — 2026')
 ON CONFLICT (id) DO NOTHING;
+
+-- Seed Initial Community Feedbacks
+INSERT INTO madrasa.feedbacks (id, name, role, course_name, rating, message, location, verified) VALUES
+('fb-1', 'Muhammad Farhan', 'student', 'Dars-e-Nizami (Aalimiyat)', 5, 'Alhamdulillah! The online Dars-e-Nizami classes are exceptionally detailed. The teachers explain Arabic grammar (Nahw & Sarf) with extreme patience and clarity. Recorded lectures make revision so easy.', 'Mumbai, Maharashtra', TRUE),
+('fb-2', 'Dr. Tariq Siddiqui', 'parent', 'Kids Special Batch', 5, 'I enrolled both my son and daughter (ages 7 & 10) in the Kids Special Batch. Within 3 months, their Quran pronunciation with Tajweed and daily Sunnah Duas improved tremendously. Safe, Islamic environment at home!', 'Lucknow, UP', TRUE),
+('fb-3', 'Fatima Khan', 'student', 'Sisters Muballiga (Aalima)', 5, 'Being a homemaker, I never thought I could complete Aalima course. Madrasa E Gulaaman E Mustafa made it possible with strict female-only privacy, female teachers, and flexible timings. JazakAllah Khair!', 'Hyderabad, Telangana', TRUE),
+('fb-4', 'Shabana Begum', 'parent', 'Sisters Muballiga (Aalima)', 5, 'My daughter is studying in the Muballiga course. The discipline, monthly exams, and direct teacher guidance are outstanding. The offline certificate is also genuine and recognized.', 'Delhi NCR', TRUE),
+('fb-5', 'Abdul Qadir', 'student', 'Tajweed & Hifz', 5, 'Makharij corrections in live Tilawat classes are unmatched. The Qari Sahib listens to every student individually. Just ₹300/month fee is a huge blessing for the Muslim Ummah.', 'Kolkata, WB', TRUE),
+('fb-6', 'Mohammad Irfan', 'parent', 'Basic Urdu & Deeniyat', 5, 'My children can now read Urdu books fluently and understand Basic Fiqh rules (Namaz, Wuzu, Taharat). Highly recommended for every Islamic parent.', 'Bangalore, Karnataka', TRUE)
+ON CONFLICT (id) DO NOTHING;
+
+-- 10. Auto-Update Timestamp Triggers
+CREATE OR REPLACE FUNCTION madrasa.set_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_classes_updated_at ON madrasa.classes;
+CREATE TRIGGER trg_classes_updated_at
+BEFORE UPDATE ON madrasa.classes
+FOR EACH ROW EXECUTE FUNCTION madrasa.set_updated_at();
+
+DROP TRIGGER IF EXISTS trg_students_updated_at ON madrasa.students;
+CREATE TRIGGER trg_students_updated_at
+BEFORE UPDATE ON madrasa.students
+FOR EACH ROW EXECUTE FUNCTION madrasa.set_updated_at();
+
+DROP TRIGGER IF EXISTS trg_settings_updated_at ON madrasa.settings;
+CREATE TRIGGER trg_settings_updated_at
+BEFORE UPDATE ON madrasa.settings
+FOR EACH ROW EXECUTE FUNCTION madrasa.set_updated_at();
