@@ -25,6 +25,7 @@ export function Proof() {
             <iframe
               src="https://www.youtube.com/embed/AkWQDvhTKy4"
               title="Madrasa Student Results"
+              loading="lazy"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
               className="w-full h-full"

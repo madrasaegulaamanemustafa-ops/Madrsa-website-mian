@@ -37,6 +37,17 @@ export const Route = createFileRoute("/feedback")({
         content:
           "Read genuine reviews and feedback from students and parents of Madrasa E Gulaaman E Mustafa ﷺ. Share your own learning experience with no sign-in required.",
       },
+      {
+        property: "og:title",
+        content: "Student & Parent Reviews — Madrasa E Gulaaman E Mustafa ﷺ",
+      },
+      {
+        property: "og:description",
+        content:
+          "Read genuine reviews and feedback from students and parents of Madrasa E Gulaaman E Mustafa ﷺ.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: FeedbackPage,
@@ -134,7 +145,7 @@ function FeedbackContent() {
   }, [feedbacks, selectedRole, searchQuery]);
 
   // Handle Submit Feedback
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (submitting) return;
 
@@ -143,6 +154,25 @@ function FeedbackContent() {
 
     if (!trimmedName || !trimmedMsg) {
       alert("Please enter your name and feedback message.");
+      return;
+    }
+
+    if (trimmedName.length < 2 || trimmedName.length > 70) {
+      alert("Please provide a valid name between 2 and 70 characters.");
+      return;
+    }
+
+    if (trimmedMsg.length < 5 || trimmedMsg.length > 1000) {
+      alert("Feedback message must be between 5 and 1000 characters.");
+      return;
+    }
+
+    // Check hidden honeypot trap field (e.target is HTMLFormElement)
+    const formElement = e.currentTarget;
+    const botTrap = (formElement.elements.namedItem("website_url") as HTMLInputElement)?.value;
+    if (botTrap) {
+      console.warn("Automated submission blocked.");
+      setModalOpen(false);
       return;
     }
 
@@ -178,7 +208,10 @@ function FeedbackContent() {
 
   const handleShare = (item: FeedbackItem) => {
     const roleTitle = item.role === "student" ? "Student" : "Parent";
-    const origin = typeof window !== "undefined" ? window.location.origin : "https://madrasaegulaamanemustafa.com";
+    const origin =
+      typeof window !== "undefined"
+        ? window.location.origin
+        : "https://madrasaegulaamanemustafa.com";
     const text = `⭐ "${item.message}"\n— ${item.name} (${roleTitle}) at Madrasa E Gulaaman E Mustafa ﷺ.\nRead all reviews at: ${origin}/feedback`;
     const shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
     window.open(shareUrl, "_blank", "noopener,noreferrer");
@@ -415,6 +448,16 @@ function FeedbackContent() {
                     </div>
                   </div>
 
+                  {/* Anti-Spam Honeypot (hidden from human users) */}
+                  <input
+                    type="text"
+                    name="website_url"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    className="hidden absolute -left-[9999px]"
+                    aria-hidden="true"
+                  />
+
                   {/* Name Input */}
                   <div>
                     <label className="block text-xs font-black uppercase tracking-wider text-emerald-deep mb-1.5">
@@ -568,9 +611,10 @@ function FeedbackCard({ item, onShare }: { item: FeedbackItem; onShare: () => vo
             onClick={onShare}
             type="button"
             title="Share on WhatsApp"
-            className="h-8 w-8 rounded-full bg-emerald-soft text-emerald-deep grid place-items-center hover:bg-emerald-deep hover:text-white transition-colors cursor-pointer"
+            aria-label={`Share ${item.name}'s review on WhatsApp`}
+            className="h-9 w-9 rounded-full bg-emerald-soft text-emerald-deep grid place-items-center hover:bg-emerald-deep hover:text-white transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-amber-500"
           >
-            <Share2 className="h-3.5 w-3.5" />
+            <Share2 className="h-4 w-4" />
           </button>
         </div>
 
@@ -607,7 +651,10 @@ function FeedbackCard({ item, onShare }: { item: FeedbackItem; onShare: () => vo
             {(item.name?.trim() ? item.name.trim().charAt(0) : "U").toUpperCase()}
           </div>
           <div>
-            <div dir="auto" className="font-display font-bold text-base text-emerald-deep leading-tight flex items-center gap-1.5">
+            <div
+              dir="auto"
+              className="font-display font-bold text-base text-emerald-deep leading-tight flex items-center gap-1.5"
+            >
               <span>{item.name || "Anonymous"}</span>
               {item.verified && (
                 <span title="Verified Review" className="inline-flex">

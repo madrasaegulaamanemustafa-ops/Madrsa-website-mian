@@ -47,9 +47,6 @@ export interface ResultsSettings {
   displayLimit: number; // e.g. 5 for top 5, or 3, 10, 0 for all
   activeExamTitle: string;
   sessionYear: string;
-  adminPin?: string;
-  adminEmail: string;
-  adminPassword: string;
   showRollNumbers: boolean;
   showPercentages: boolean;
   bannerNotice: string;
@@ -59,9 +56,6 @@ export const DEFAULT_SETTINGS: ResultsSettings = {
   displayLimit: 5,
   activeExamTitle: "Monthly Fatah-E-Battle & Exam Results",
   sessionYear: "2026–27",
-  adminPin: import.meta.env.VITE_ADMIN_DEFAULT_PIN || "7860",
-  adminEmail: "admin@madrasa.com",
-  adminPassword: "madrasa@admin786",
   showRollNumbers: true,
   showPercentages: true,
   bannerNotice:
@@ -370,9 +364,6 @@ export async function getResultsSettings(): Promise<ResultsSettings> {
           displayLimit: data.display_limit ?? DEFAULT_SETTINGS.displayLimit,
           activeExamTitle: data.active_exam_title || DEFAULT_SETTINGS.activeExamTitle,
           sessionYear: data.session_year || DEFAULT_SETTINGS.sessionYear,
-          adminPin: data.admin_pin || DEFAULT_SETTINGS.adminPin,
-          adminEmail: data.admin_email || DEFAULT_SETTINGS.adminEmail,
-          adminPassword: data.admin_password || DEFAULT_SETTINGS.adminPassword,
           showRollNumbers: data.show_roll_numbers ?? true,
           showPercentages: data.show_percentages ?? true,
           bannerNotice: data.banner_notice || DEFAULT_SETTINGS.bannerNotice,
@@ -401,12 +392,10 @@ export async function saveResultsSettings(settings: ResultsSettings): Promise<vo
         display_limit: settings.displayLimit,
         active_exam_title: settings.activeExamTitle,
         session_year: settings.sessionYear,
-        admin_pin: settings.adminPin || "7860",
-        admin_email: settings.adminEmail,
-        admin_password: settings.adminPassword,
         show_roll_numbers: settings.showRollNumbers,
         show_percentages: settings.showPercentages,
         banner_notice: settings.bannerNotice,
+        updated_at: new Date().toISOString(),
       }),
       3500,
     );
@@ -479,14 +468,21 @@ export async function saveClass(cls: ClassCategory): Promise<void> {
 }
 
 export async function deleteClass(classId: string): Promise<void> {
-  const current = getLocalClasses();
-  const updated = current.filter((c) => c.id !== classId);
+  const currentClasses = getLocalClasses();
+  const currentStudents = getLocalStudents();
+  const updatedClasses = currentClasses.filter((c) => c.id !== classId);
+  const updatedStudents = currentStudents.filter((s) => s.classId !== classId);
+
   if (typeof window !== "undefined") {
-    localStorage.setItem(LOCAL_STORAGE_KEY_CLASSES, JSON.stringify(updated));
+    localStorage.setItem(LOCAL_STORAGE_KEY_CLASSES, JSON.stringify(updatedClasses));
+    localStorage.setItem(LOCAL_STORAGE_KEY_STUDENTS, JSON.stringify(updatedStudents));
   }
   if (!isSupabaseConfigured()) return;
 
   try {
+    // 1. Delete all students belonging to this class first to prevent Foreign Key blocks
+    await withTimeout(supabase.from("students").delete().eq("class_id", classId), 3500);
+    // 2. Delete the class
     const { error } = await withTimeout(supabase.from("classes").delete().eq("id", classId), 3500);
     if (error) {
       console.warn("Supabase deleteClass warning:", error);
@@ -670,12 +666,10 @@ export async function seedAllDefaultsToSupabase(): Promise<void> {
         display_limit: DEFAULT_SETTINGS.displayLimit,
         active_exam_title: DEFAULT_SETTINGS.activeExamTitle,
         session_year: DEFAULT_SETTINGS.sessionYear,
-        admin_pin: DEFAULT_SETTINGS.adminPin || "7860",
-        admin_email: DEFAULT_SETTINGS.adminEmail,
-        admin_password: DEFAULT_SETTINGS.adminPassword,
         show_roll_numbers: DEFAULT_SETTINGS.showRollNumbers,
         show_percentages: DEFAULT_SETTINGS.showPercentages,
         banner_notice: DEFAULT_SETTINGS.bannerNotice,
+        updated_at: new Date().toISOString(),
       }),
       3000,
     );
@@ -736,12 +730,10 @@ export async function restoreBackupDataset(backup: {
           display_limit: backup.settings.displayLimit,
           active_exam_title: backup.settings.activeExamTitle,
           session_year: backup.settings.sessionYear,
-          admin_pin: backup.settings.adminPin || "7860",
-          admin_email: backup.settings.adminEmail,
-          admin_password: backup.settings.adminPassword,
           show_roll_numbers: backup.settings.showRollNumbers,
           show_percentages: backup.settings.showPercentages,
           banner_notice: backup.settings.bannerNotice,
+          updated_at: new Date().toISOString(),
         }),
         3500,
       );
@@ -775,5 +767,54 @@ export async function restoreBackupDataset(backup: {
     }
   } catch (error) {
     console.warn("Supabase restore backup sync offline/timed out, saved locally:", error);
+  }
+}
+
+// ----------------- ADMIN AUTHENTICATION HELPERS -----------------
+
+export async function loginAdminWithSupabase(
+  email: string,
+  pass: string,
+): Promise<{ success: boolean; error?: string }> {
+  if (!isSupabaseConfigured()) {
+    return { success: true };
+  }
+
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password: pass,
+    });
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    return { success: !!data.session };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Authentication failed.",
+    };
+  }
+}
+
+export async function logoutAdminFromSupabase(): Promise<void> {
+  if (isSupabaseConfigured()) {
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.warn("Supabase signout error:", err);
+    }
+  }
+}
+
+export async function getAdminAuthSession() {
+  if (!isSupabaseConfigured()) return null;
+  try {
+    const { data } = await supabase.auth.getSession();
+    return data.session;
+  } catch {
+    return null;
   }
 }

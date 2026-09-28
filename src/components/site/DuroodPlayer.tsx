@@ -9,8 +9,8 @@ export function DuroodPlayer() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    // Create audio instance with lazy preload
-    const audio = new Audio("/DUROOD SHARIF.mp3");
+    // Create audio instance with lazy preload and encoded URI
+    const audio = new Audio(encodeURI("/DUROOD SHARIF.mp3"));
     audio.preload = "none";
     audio.loop = true;
     audio.volume = 0.35; // Gentle background volume
@@ -73,9 +73,14 @@ export function DuroodPlayer() {
       audioRef.current.pause();
       sessionStorage.setItem("durood_user_paused", "true");
     } else {
-      audioRef.current.play().then(() => {
-        sessionStorage.removeItem("durood_user_paused");
-      });
+      audioRef.current
+        .play()
+        .then(() => {
+          sessionStorage.removeItem("durood_user_paused");
+        })
+        .catch((err) => {
+          console.debug("Audio play blocked by browser policy:", err);
+        });
     }
   };
 

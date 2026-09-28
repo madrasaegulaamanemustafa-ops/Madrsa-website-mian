@@ -7,7 +7,22 @@ import { Video, Maximize2, X, ChevronLeft, ChevronRight } from "lucide-react";
 
 export const Route = createFileRoute("/why-us")({
   head: () => ({
-    meta: [{ title: "Why Us? — Madrasa E Gulaaman E Mustafa ﷺ" }],
+    meta: [
+      { title: "Why Choose Us? 15 Institute Highlights — Madrasa E Gulaaman E Mustafa ﷺ" },
+      {
+        name: "description",
+        content:
+          "Discover 15 unique features: Live online classes, daily recordings, strict female privacy, monthly exams, gamified learning, and recognized offline Sanad at ₹300/mo.",
+      },
+      { property: "og:title", content: "Why Us? 15 Highlights — Madrasa E Gulaaman E Mustafa ﷺ" },
+      {
+        property: "og:description",
+        content:
+          "Live classes, female privacy, monthly exam battles, and recognized offline Sanad at ₹300/mo.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
   }),
   component: WhyUs,
 });
@@ -275,15 +290,20 @@ function FeatureSection({
       <div className="flex-1 w-full">
         <div
           onClick={onMediaClick}
-          className="rounded-3xl p-2.5 shadow-soft relative group overflow-hidden border border-emerald-deep/10 bg-white cursor-pointer hover:border-gold/60 transition-all duration-300 hover:shadow-luxe"
+          onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onMediaClick()}
+          role="button"
+          tabIndex={0}
+          aria-label={`View full media for ${point.title}`}
+          className="rounded-3xl p-2.5 shadow-soft relative group overflow-hidden border border-emerald-deep/10 bg-white cursor-pointer hover:border-gold/60 transition-all duration-300 hover:shadow-luxe focus-visible:ring-2 focus-visible:ring-amber-500"
           title="Click to view full size"
         >
           <div className="rounded-2xl overflow-hidden aspect-[4/3] sm:aspect-video relative bg-emerald-deep/5 flex items-center justify-center">
             {media?.type === "image" ? (
               <img
                 src={media.src}
-                alt={imageAlt}
+                alt={imageAlt || point.title}
                 loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
             ) : media?.type === "video" ? (

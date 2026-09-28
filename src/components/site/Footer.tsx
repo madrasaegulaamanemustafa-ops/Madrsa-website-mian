@@ -76,6 +76,8 @@ export function Footer() {
                 <img
                   src="/images/why-us/logo.png"
                   alt="Madrasa E Gulaaman E Mustafa ﷺ Official Seal"
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-contain drop-shadow-sm hover:scale-105 transition-transform duration-300"
                 />
               </div>

@@ -142,19 +142,59 @@ export async function getFeedbacks(): Promise<FeedbackItem[]> {
   return local;
 }
 
+const SUBMISSION_COOLDOWN_KEY = "mgm_last_feedback_timestamp";
+const COOLDOWN_SECONDS = 30;
+
 export async function addFeedback(
-  feedback: Omit<FeedbackItem, "id" | "createdAt" | "verified">,
+  feedback: Omit<FeedbackItem, "id" | "createdAt" | "verified"> & { honeypot?: string },
 ): Promise<FeedbackItem> {
+  // 1. Honeypot check (trap automated bot spam)
+  if (feedback.honeypot && feedback.honeypot.trim().length > 0) {
+    throw new Error("Bot submission detected.");
+  }
+
+  // 2. Client submission rate limiting (cooldown)
+  if (typeof window !== "undefined") {
+    const lastTime = localStorage.getItem(SUBMISSION_COOLDOWN_KEY);
+    if (lastTime) {
+      const elapsed = (Date.now() - parseInt(lastTime, 10)) / 1000;
+      if (elapsed < COOLDOWN_SECONDS) {
+        throw new Error(
+          `Please wait ${Math.ceil(COOLDOWN_SECONDS - elapsed)} seconds before submitting another feedback.`,
+        );
+      }
+    }
+  }
+
+  // 3. Input sanitization & validation
+  const cleanName = feedback.name.trim().slice(0, 100);
+  const cleanMessage = feedback.message.trim().slice(0, 1000);
+  const cleanLocation = feedback.location ? feedback.location.trim().slice(0, 100) : undefined;
+  const cleanCourse = feedback.courseName ? feedback.courseName.trim().slice(0, 100) : undefined;
+  const cleanRating = Math.max(1, Math.min(5, Math.round(feedback.rating || 5)));
+
+  if (!cleanName || cleanName.length < 2) {
+    throw new Error("Name must be at least 2 characters.");
+  }
+  if (!cleanMessage || cleanMessage.length < 5) {
+    throw new Error("Feedback message must be at least 5 characters.");
+  }
+
   const generatedId =
     typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
       ? crypto.randomUUID()
       : `fb-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
   const newFeedback: FeedbackItem = {
-    ...feedback,
     id: generatedId,
+    name: cleanName,
+    role: feedback.role === "parent" ? "parent" : "student",
+    courseName: cleanCourse,
+    rating: cleanRating,
+    message: cleanMessage,
+    location: cleanLocation,
     createdAt: new Date().toISOString(),
-    verified: true,
+    verified: false,
   };
 
   const current = getLocalFeedbacks();
@@ -162,6 +202,7 @@ export async function addFeedback(
 
   if (typeof window !== "undefined") {
     localStorage.setItem(LOCAL_STORAGE_KEY_FEEDBACK, JSON.stringify(updated));
+    localStorage.setItem(SUBMISSION_COOLDOWN_KEY, Date.now().toString());
   }
 
   if (isSupabaseConfigured()) {

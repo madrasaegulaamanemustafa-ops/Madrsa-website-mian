@@ -42,6 +42,17 @@ export const Route = createFileRoute("/results")({
         content:
           "Official Top 5 student results and rankers for Dars-e-Nizami, Muballiga, Tajweed, and Kids courses at Madrasa E Gulaaman E Mustafa ﷺ.",
       },
+      {
+        property: "og:title",
+        content: "Student Results & Top Rankers — Madrasa E Gulaaman E Mustafa ﷺ",
+      },
+      {
+        property: "og:description",
+        content:
+          "Top 5 position holders and monthly exam rankers at Madrasa E Gulaaman E Mustafa ﷺ.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: ResultsPage,
@@ -168,9 +179,13 @@ function ResultsContent() {
   ) => {
     const finalRank = student.computedRank ?? student.rank;
     const tieLabel = student.isTie ? " (Tied)" : "";
-    const text = `🏆 Mubarakbaad! ${student.name} achieved Rank #${finalRank}${tieLabel} (${student.percentage}%) in ${student.className} at Madrasa E Gulaaman E Mustafa ﷺ! Check all results at: ${window.location.origin}/results`;
-    const shareUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
-    window.open(shareUrl, "_blank");
+    const origin =
+      typeof window !== "undefined"
+        ? window.location.origin
+        : "https://madrasaegulaamanemustafa.com";
+    const text = `🏆 Mubarakbaad! ${student.name} achieved Rank #${finalRank}${tieLabel} (${student.percentage}%) in ${student.className} at Madrasa E Gulaaman E Mustafa ﷺ! Check all results at: ${origin}/results`;
+    const shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+    window.open(shareUrl, "_blank", "noopener,noreferrer");
   };
 
   return (
@@ -574,9 +589,10 @@ function PodiumSlotCard({
             onClick={() => onShare(primaryStudent)}
             type="button"
             title="Share on WhatsApp"
-            className="h-8 w-8 rounded-full bg-emerald-soft text-emerald-deep grid place-items-center hover:bg-emerald-deep hover:text-white transition-colors cursor-pointer"
+            aria-label={`Share ${primaryStudent.name}'s result on WhatsApp`}
+            className="h-9 w-9 rounded-full bg-emerald-soft text-emerald-deep grid place-items-center hover:bg-emerald-deep hover:text-white transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-amber-500"
           >
-            <Share2 className="h-3.5 w-3.5" />
+            <Share2 className="h-4 w-4" />
           </button>
         </div>
 
@@ -585,10 +601,16 @@ function PodiumSlotCard({
           <div
             className={`h-16 w-16 mx-auto rounded-full border-2 ${config.avatarBg} grid place-items-center mb-3 font-display text-2xl font-black shadow-subtle`}
           >
-            {primaryStudent.name.charAt(0)}
+            {(primaryStudent.name?.trim()
+              ? primaryStudent.name.trim().charAt(0)
+              : "S"
+            ).toUpperCase()}
           </div>
 
-          <h3 className="font-display text-xl sm:text-2xl font-extrabold text-emerald-deep mb-1 leading-tight">
+          <h3
+            dir="auto"
+            className="font-display text-xl sm:text-2xl font-extrabold text-emerald-deep mb-1 leading-tight"
+          >
             {primaryStudent.name}
           </h3>
 
@@ -674,10 +696,13 @@ function PodiumSlotCard({
                 <div
                   className={`h-9 w-9 rounded-full border ${config.avatarBg} grid place-items-center font-display text-sm font-black shrink-0`}
                 >
-                  {st.name.charAt(0)}
+                  {(st.name?.trim() ? st.name.trim().charAt(0) : "S").toUpperCase()}
                 </div>
                 <div>
-                  <div className="font-display font-bold text-sm sm:text-base text-emerald-deep leading-snug">
+                  <div
+                    dir="auto"
+                    className="font-display font-bold text-sm sm:text-base text-emerald-deep leading-snug"
+                  >
                     {st.name}
                   </div>
                   {showRoll && st.rollNo && (

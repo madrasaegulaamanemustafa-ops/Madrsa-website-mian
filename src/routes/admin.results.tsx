@@ -16,6 +16,9 @@ import {
   saveResultsSettings,
   seedAllDefaultsToDatabase,
   restoreBackupDataset,
+  loginAdminWithSupabase,
+  logoutAdminFromSupabase,
+  getAdminAuthSession,
   StudentResult,
   ClassCategory,
   ResultsSettings,
@@ -157,6 +160,19 @@ function AdminContent() {
   };
 
   useEffect(() => {
+    async function checkActiveSession() {
+      const session = await getAdminAuthSession();
+      if (session) {
+        setIsAuthenticated(true);
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem("mgm_admin_authenticated", "true");
+        }
+      }
+    }
+    checkActiveSession();
+  }, []);
+
+  useEffect(() => {
     if (isAuthenticated) {
       loadAllData();
     }
@@ -200,31 +216,39 @@ function AdminContent() {
     });
   }, [feedbacks, feedbackRoleFilter, feedbackSearch]);
 
-  // Secure Email & Password Login
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  // Secure Supabase Admin Login
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanEmail = enteredEmail.trim().toLowerCase();
     const cleanPass = enteredPassword.trim();
 
-    const expectedEmail = (settings.adminEmail || DEFAULT_SETTINGS.adminEmail).toLowerCase();
-    const expectedPass = settings.adminPassword || DEFAULT_SETTINGS.adminPassword;
-    const expectedPin = settings.adminPin || DEFAULT_SETTINGS.adminPin || "7860";
+    if (!cleanEmail || !cleanPass) {
+      setLoginError("Please enter both email and password.");
+      return;
+    }
 
-    const isEmailMatch = cleanEmail === expectedEmail || cleanEmail === "admin";
-    const isPassMatch = cleanPass === expectedPass || (expectedPin && cleanPass === expectedPin);
+    setLoading(true);
+    setLoginError("");
 
-    if (isEmailMatch && isPassMatch) {
-      setIsAuthenticated(true);
-      if (typeof window !== "undefined") {
-        sessionStorage.setItem("mgm_admin_authenticated", "true");
+    try {
+      const res = await loginAdminWithSupabase(cleanEmail, cleanPass);
+      if (res.success) {
+        setIsAuthenticated(true);
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem("mgm_admin_authenticated", "true");
+        }
+      } else {
+        setLoginError(res.error || "Invalid credentials. Please verify your email and password.");
       }
-      setLoginError("");
-    } else {
-      setLoginError("Invalid Email/Username or Password. Please verify your credentials.");
+    } catch (err) {
+      setLoginError("Login error. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await logoutAdminFromSupabase();
     setIsAuthenticated(false);
     if (typeof window !== "undefined") {
       sessionStorage.removeItem("mgm_admin_authenticated");
