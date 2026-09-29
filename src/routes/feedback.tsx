@@ -11,6 +11,11 @@ import {
   FeedbackRole,
 } from "@/lib/feedbackService";
 import {
+  getClasses,
+  getLocalClasses,
+  ClassCategory,
+} from "@/lib/resultsService";
+import {
   Star,
   MessageSquarePlus,
   Users,
@@ -72,6 +77,9 @@ function FeedbackContent() {
   const [feedbacks, setFeedbacks] = useState<FeedbackItem[]>(() =>
     typeof window !== "undefined" ? getLocalFeedbacks() : [],
   );
+  const [classes, setClasses] = useState<ClassCategory[]>(() =>
+    typeof window !== "undefined" ? getLocalClasses() : [],
+  );
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedRole, setSelectedRole] = useState<"all" | FeedbackRole>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -79,15 +87,17 @@ function FeedbackContent() {
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [submitSuccess, setSubmitSuccess] = useState<boolean>(false);
 
-  // Form State - only Name, Role, Rating, Message
+  // Form State - Name, Role, Optional Course Name, Rating, Message
   const [formData, setFormData] = useState<{
     name: string;
     role: FeedbackRole;
+    courseName: string;
     rating: number;
     message: string;
   }>({
     name: "",
     role: "student",
+    courseName: "",
     rating: 5,
     message: "",
   });
@@ -96,10 +106,14 @@ function FeedbackContent() {
     async function loadData() {
       try {
         setLoading(true);
-        const data = await getFeedbacks();
-        setFeedbacks(data);
+        const [fbData, clsData] = await Promise.all([
+          getFeedbacks(),
+          getClasses(),
+        ]);
+        setFeedbacks(fbData);
+        setClasses(clsData);
       } catch (e) {
-        console.error("Error loading feedbacks:", e);
+        console.error("Error loading feedbacks or classes:", e);
       } finally {
         setLoading(false);
       }
@@ -181,6 +195,7 @@ function FeedbackContent() {
       const newFb = await addFeedback({
         name: trimmedName,
         role: formData.role,
+        courseName: formData.courseName.trim() || undefined,
         rating: Math.max(1, Math.min(5, Number(formData.rating) || 5)),
         message: trimmedMsg,
       });
@@ -190,6 +205,7 @@ function FeedbackContent() {
       setFormData({
         name: "",
         role: "student",
+        courseName: "",
         rating: 5,
         message: "",
       });
@@ -474,6 +490,28 @@ function FeedbackContent() {
                       className="w-full rounded-2xl border border-emerald-deep/20 px-4 py-2.5 text-sm font-medium text-emerald-deep focus:outline-none focus:border-amber-500"
                     />
                   </div>
+
+                  {/* Optional Class / Course Selection for Students */}
+                  {formData.role === "student" && (
+                    <div>
+                      <label className="block text-xs font-black uppercase tracking-wider text-emerald-deep mb-1.5">
+                        Class / Course Name{" "}
+                        <span className="text-foreground/50 lowercase font-normal">(optional)</span>
+                      </label>
+                      <select
+                        value={formData.courseName}
+                        onChange={(e) => setFormData({ ...formData, courseName: e.target.value })}
+                        className="w-full rounded-2xl border border-emerald-deep/20 px-4 py-2.5 text-sm font-medium text-emerald-deep focus:outline-none focus:border-amber-500 bg-white"
+                      >
+                        <option value="">-- Select Enrolled Class / Course (Optional) --</option>
+                        {classes.map((cls) => (
+                          <option key={cls.id} value={cls.name}>
+                            {cls.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
 
                   {/* Star Rating */}
                   <div>
