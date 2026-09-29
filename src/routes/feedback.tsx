@@ -663,7 +663,8 @@ function FeedbackCard({ item, onShare }: { item: FeedbackItem; onShare: () => vo
               )}
             </div>
             <div className="text-[11px] font-semibold text-emerald-800/70 leading-tight mt-0.5">
-              {isStudent ? "Enrolled Student" : "Student's Parent / Guardian"}
+              {item.courseName || (isStudent ? "Enrolled Student" : "Student's Parent / Guardian")}
+              {item.location ? ` • ${item.location}` : ""}
             </div>
           </div>
         </div>

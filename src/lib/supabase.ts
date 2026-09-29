@@ -17,11 +17,8 @@ export const isSupabaseConfigured = (): boolean => {
   return true;
 };
 
-// Initialize Supabase Client with 'madrasa' schema and auth persistence
+// Initialize Supabase Client with 'public' schema and auth persistence
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  db: {
-    schema: (import.meta.env.VITE_SUPABASE_SCHEMA || "madrasa") as "public",
-  },
   auth: {
     persistSession: true,
     autoRefreshToken: true,
